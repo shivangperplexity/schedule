@@ -1,97 +1,107 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>दौरा कार्यक्रम - विश्वजीत कदम</title>
-<style>
-body {margin:0;font-family:"Noto Sans Devanagari",sans-serif;background:#f7f7f7;}
-header{background:#e65100;color:white;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
-.container{max-width:800px;margin:auto;padding:15px;}
-h2{text-align:center;color:#333;margin-bottom:10px;font-size:22px;}
-.filter-box{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:20px;}
-.filter-box input,.filter-box button{width:95%;max-width:500px;padding:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;outline:none;transition:0.3s;}
-.filter-box input:focus{border-color:#e65100;box-shadow:0 0 5px rgba(230,81,0,0.5);}
-.filter-box button{background:#e65100;color:white;border:none;cursor:pointer;font-weight:bold;}
-.filter-box button:hover{background:#bf360c;}
-.event{background:white;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0px 4px 8px rgba(0,0,0,0.1);transform:translateY(30px);opacity:0;animation:slideUp 0.8s ease forwards;}
-.event h3{margin:0;color:#e65100;font-size:18px;}
-.event p{margin:5px 0;color:#555;font-size:15px;}
-@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-footer{text-align:center;padding:10px;color:#666;font-size:14px;}
-@media(max-width:600px){.event h3{font-size:16px;}.event p{font-size:14px;}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>दौरा कार्यक्रम - विश्वजीत कदम</title>
+  <style>
+    body { margin:0; font-family:"Noto Sans Devanagari", sans-serif; background:#f7f7f7; }
+    header { background:#e65100; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
+    .container { max-width:800px; margin:auto; padding:15px; }
+    h2 { text-align:center; color:#333; margin-bottom:10px; font-size:22px; }
+
+    /* Filter Box */
+    .filter-box { display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px; }
+    .filter-box input, .filter-box button { width:95%; max-width:500px; padding:10px; font-size:16px; border-radius:8px; border:1px solid #ccc; outline:none; transition:0.3s; }
+    .filter-box input:focus { border-color:#e65100; box-shadow:0 0 5px rgba(230,81,0,0.5); }
+    .filter-box button { background:#e65100; color:white; border:none; cursor:pointer; font-weight:bold; }
+    .filter-box button:hover { background:#bf360c; }
+
+    /* Event Card */
+    .event { background:white; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0px 4px 8px rgba(0,0,0,0.1); transform: translateY(30px); opacity:0; animation: slideUp 0.8s ease forwards; }
+    .event h3 { margin:0; color:#e65100; font-size:18px; }
+    .event p { margin:5px 0; color:#555; font-size:15px; }
+    .event a { color:#e65100; text-decoration:none; }
+    .event a:hover { text-decoration:underline; }
+
+    .event:nth-child(1){ animation-delay:0.2s; }
+    .event:nth-child(2){ animation-delay:0.4s; }
+    .event:nth-child(3){ animation-delay:0.6s; }
+    .event:nth-child(4){ animation-delay:0.8s; }
+
+    @keyframes slideUp { from{transform:translateY(30px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+    footer { text-align:center; padding:10px; color:#666; font-size:14px; }
+    @media(max-width:600px){ .event h3{font-size:16px;} .event p{font-size:14px;} }
+  </style>
 </head>
 <body>
 
 <header>आ. विश्वजीत कदम</header>
-
 <div class="container">
-<h2>दौरा कार्यक्रम</h2>
+  <h2>दौरा कार्यक्रम</h2>
 
-<div class="filter-box">
-<input type="text" id="searchInput" placeholder="कार्यक्रम शोधा (दिनांक, ठिकाण, विवरण)">
-<input type="date" id="dateFilter">
-<button id="clearBtn">फिल्टर काढा</button>
-</div>
+  <!-- Search + Date Filter -->
+  <div class="filter-box">
+    <input type="text" id="searchInput" placeholder="कार्यक्रम शोधा (दिनांक, ठिकाण, विवरण)">
+    <input type="date" id="dateFilter">
+    <button id="clearBtn">फिल्टर काढा</button>
+  </div>
 
-<div id="eventsContainer"></div>
+  <!-- Events Container -->
+  <div id="events-container">
+    <!-- Events will be dynamically loaded here -->
+  </div>
 </div>
 
 <footer>© २०२५ आ. विश्वजीत कदम | सर्व हक्क राखीव</footer>
 
 <script>
-let eventsData = [];
+  const searchInput = document.getElementById("searchInput");
+  const dateFilter = document.getElementById("dateFilter");
+  const clearBtn = document.getElementById("clearBtn");
+  const eventsContainer = document.getElementById("events-container");
 
-async function loadEvents() {
-  const response = await fetch('events.json');
-  eventsData = await response.json();
-  renderEvents(eventsData);
-}
+  // Load events from localStorage
+  let events = JSON.parse(localStorage.getItem('events') || '[]');
 
-function renderEvents(events){
-  const container = document.getElementById('eventsContainer');
-  container.innerHTML = '';
-  events.forEach((event,i)=>{
-    const div = document.createElement('div');
-    div.className='event';
-    div.style.animationDelay = `${0.2 + i*0.2}s`;
-    div.innerHTML=`
-      <h3>${event.title}</h3>
-      <p><strong>दिनांक:</strong> ${event.date}</p>
-      <p><strong>ठिकाण:</strong> <a href="${event.map_url}" target="_blank">${event.place}</a></p>
-      <p><strong>विवरण:</strong> ${event.description}</p>
-    `;
-    container.appendChild(div);
+  function renderEvents(eventsToRender){
+    eventsContainer.innerHTML = '';
+    eventsToRender.forEach((event, index)=>{
+      const div = document.createElement('div');
+      div.className = 'event';
+      div.innerHTML = `
+        <h3>${event.title}</h3>
+        <p><strong>दिनांक:</strong> ${event.date}</p>
+        <p><strong>ठिकाण:</strong> ${event.place}</p>
+        <p><strong>विवरण:</strong> ${event.description}</p>
+        ${event.map_url ? `<p><a href="${event.map_url}" target="_blank">Google नकाशा</a></p>` : ''}
+      `;
+      eventsContainer.appendChild(div);
+    });
+  }
+
+  renderEvents(events);
+
+  // Filter function
+  function filterEvents(){
+    const searchValue = searchInput.value.toLowerCase();
+    const selectedDate = dateFilter.value;
+    const filtered = events.filter(event=>{
+      const text = `${event.title} ${event.date} ${event.place} ${event.description}`.toLowerCase();
+      const matchesSearch = text.includes(searchValue);
+      const matchesDate = !selectedDate || event.date === selectedDate;
+      return matchesSearch && matchesDate;
+    });
+    renderEvents(filtered);
+  }
+
+  searchInput.addEventListener('keyup', filterEvents);
+  dateFilter.addEventListener('change', filterEvents);
+  clearBtn.addEventListener('click', ()=>{
+    searchInput.value = '';
+    dateFilter.value = '';
+    renderEvents(events);
   });
-}
-
-// Filter
-const searchInput = document.getElementById("searchInput");
-const dateFilter = document.getElementById("dateFilter");
-const clearBtn = document.getElementById("clearBtn");
-
-function filterEvents(){
-  const searchValue = searchInput.value.toLowerCase();
-  const selectedDate = dateFilter.value;
-  const filtered = eventsData.filter(event=>{
-    const text = `${event.title} ${event.date} ${event.place} ${event.description}`.toLowerCase();
-    const matchesSearch = text.includes(searchValue);
-    const matchesDate = !selectedDate || event.date===selectedDate;
-    return matchesSearch && matchesDate;
-  });
-  renderEvents(filtered);
-}
-
-searchInput.addEventListener("keyup", filterEvents);
-dateFilter.addEventListener("change", filterEvents);
-clearBtn.addEventListener("click", ()=>{
-  searchInput.value='';
-  dateFilter.value='';
-  renderEvents(eventsData);
-});
-
-loadEvents();
 </script>
 
 </body>
