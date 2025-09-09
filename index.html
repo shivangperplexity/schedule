@@ -2,62 +2,106 @@
 <html lang="mr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>दौरा कार्यक्रम - आ. विश्वजीत कदम</title>
   <style>
-    body {margin:0;font-family:"Noto Sans Devanagari",sans-serif;background:#f7f7f7;}
-    header {background:#e65100;color:white;padding:15px;text-align:center;font-size:20px;font-weight:bold;position:relative;}
-    .reload {position:absolute;right:12px;top:12px;background:rgba(255,255,255,0.15);color:white;border:none;padding:6px 8px;border-radius:6px;cursor:pointer;font-weight:600;}
-    .container {max-width:800px;margin:auto;padding:15px;}
-    h2 {text-align:center;color:#333;margin-bottom:10px;font-size:22px;}
-    .filter-box {display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:20px;}
-    .filter-box input, .filter-box button {width:95%;max-width:500px;padding:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;outline:none;transition:0.3s;}
-    .filter-box input:focus {border-color:#e65100;box-shadow:0 0 5px rgba(230,81,0,0.5);}
-    .filter-box button {background:#e65100;color:white;border:none;cursor:pointer;font-weight:bold;}
-    .filter-box button:hover {background:#bf360c;}
-    .event {background:white;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0px 4px 8px rgba(0,0,0,0.1);transform:translateY(30px);opacity:0;animation:slideUp 0.8s ease forwards;}
-    .event h3 {margin:0;color:#e65100;font-size:18px;}
-    .event p {margin:5px 0;color:#555;font-size:15px;}
-    .map-link {display:inline-block;margin-top:8px;padding:6px 10px;border-radius:6px;background:#e65100;color:white;text-decoration:none;font-weight:600;}
-    @keyframes slideUp {from {transform:translateY(30px);opacity:0;} to {transform:translateY(0);opacity:1;}}
-    footer {text-align:center;padding:10px;color:#666;font-size:14px;}
+    body {
+      margin: 0;
+      font-family: "Noto Sans Devanagari", sans-serif;
+      background: #f7f7f7;
+    }
+    header {
+      background: #e65100;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      position: relative;
+    }
+    .reload {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: none;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .container { max-width: 800px; margin: auto; padding: 15px; }
+    h2 { text-align: center; color: #333; margin-bottom: 10px; font-size: 22px; }
+    .filter-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .filter-box input, .filter-box button {
+      width: 95%; max-width: 500px; padding: 10px; font-size: 16px; border-radius: 8px;
+      border: 1px solid #ccc; outline: none; transition: 0.3s;
+    }
+    .filter-box input:focus { border-color: #e65100; box-shadow: 0 0 5px rgba(230,81,0,0.5); }
+    .filter-box button { background: #e65100; color: white; border: none; cursor: pointer; font-weight: bold; }
+    .filter-box button:hover { background: #bf360c; }
+    .event {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      transform: translateY(30px);
+      opacity: 0;
+      animation: slideUp 0.8s ease forwards;
+    }
+    .event h3 { margin: 0; color: #e65100; font-size: 18px; }
+    .event p { margin: 5px 0; color: #555; font-size: 15px; }
+    .map-link {
+      display:inline-block;
+      margin-top:8px;
+      padding:6px 10px;
+      border-radius:6px;
+      background:#e65100;
+      color:white;
+      text-decoration:none;
+      font-weight:600;
+    }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    footer { text-align: center; padding: 10px; color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
 <header>
   आ. विश्वजीत कदम
-  <button class="reload" onclick="window.location.reload()">🔄</button>
+  <button class="reload" onclick="loadEvents()">🔄</button>
 </header>
 
 <div class="container">
   <h2>दौरा कार्यक्रम</h2>
-
   <div class="filter-box">
     <input type="text" id="searchInput" placeholder="कार्यक्रम शोधा (दिनांक, ठिकाण, विवरण)">
     <input type="date" id="dateFilter">
     <button id="clearBtn">फिल्टर काढा</button>
   </div>
-
   <div id="eventsContainer">लोड होत आहे...</div>
 </div>
 
 <footer>© २०२५ आ. विश्वजीत कदम | सर्व हक्क राखीव</footer>
 
-<!-- Firebase v8 CDN -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-<script>
 const firebaseConfig = {
-    apiKey: "AIzaSyD7dNWujSZFUSat3zKH0lXf8hNZKCv6-XU",
-    authDomain: "schedule-balasaheb.firebaseapp.com",
-    projectId: "schedule-balasaheb",
-    storageBucket: "schedule-balasaheb.appspot.com",
-    messagingSenderId: "614219892733",
-    appId: "1:614219892733:web:YOUR_APP_ID"
+  apiKey: "AIzaSyD7dNWujSZFUSat3zKH0lXf8hNZKCv6-XU",
+  authDomain: "schedule-balasaheb.firebaseapp.com",
+  projectId: "schedule-balasaheb",
+  storageBucket: "schedule-balasaheb.appspot.com",
+  messagingSenderId: "614219892733",
+  appId: "1:614219892733:web:15f60c89267014cab37b94",
+  measurementId: "G-0R21W5VRQ7"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const container = document.getElementById('eventsContainer');
 const searchInput = document.getElementById('searchInput');
@@ -66,12 +110,14 @@ const clearBtn = document.getElementById('clearBtn');
 let allEvents = [];
 
 async function loadEvents() {
+  container.innerHTML = "लोड होत आहे...";
   try {
-    const snapshot = await db.collection('events').orderBy('date').get();
-    const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const q = query(collection(db, "events"), orderBy("date"));
+    const snapshot = await getDocs(q);
+    const events = snapshot.docs.map(doc => doc.data());
     allEvents = events;
     render(events);
-  } catch (err) {
+  } catch(err) {
     container.innerHTML = "कार्यक्रम लोड करता आले नाहीत.";
     console.error(err);
   }
@@ -79,7 +125,10 @@ async function loadEvents() {
 
 function render(list) {
   container.innerHTML = "";
-  if (!list.length) { container.innerHTML = "<p>सध्या कोणतेही कार्यक्रम उपलब्ध नाहीत.</p>"; return; }
+  if (!list.length) {
+    container.innerHTML = "<p>सध्या कोणतेही कार्यक्रम उपलब्ध नाहीत.</p>";
+    return;
+  }
   list.forEach((ev, i) => {
     const div = document.createElement("div");
     div.className = "event";
