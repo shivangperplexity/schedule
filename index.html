@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>दौरा कार्यक्रम - आ. विश्वजीत कदम</title>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+  
+  <style>
+    body { font-family:"Noto Sans Devanagari",sans-serif; margin:0; background:#f7f7f7; color:#333;}
+    header {background:#e65100; color:white; padding:15px; text-align:center; position:relative; font-size:20px; font-weight:bold;}
+    .reload {position:absolute; right:12px; top:12px; background:rgba(255,255,255,0.15); color:white; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; font-weight:600;}
+    .container {max-width:800px; margin:auto; padding:15px;}
+    h2 {text-align:center; margin-bottom:15px;}
+    .filter-box {display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px;}
+    .filter-box input, .filter-box button {width:95%; max-width:500px; padding:10px; border-radius:8px; border:1px solid #ccc; outline:none; font-size:16px;}
+    .filter-box input:focus {border-color:#e65100; box-shadow:0 0 5px rgba(230,81,0,0.5);}
+    .filter-box button {background:#e65100; color:white; border:none; cursor:pointer; font-weight:bold;}
+    .filter-box button:hover {background:#bf360c;}
+    .event {background:white; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0px 4px 8px rgba(0,0,0,0.1);}
+    .event h3 {margin:0; color:#e65100;}
+    .map-link {display:inline-block; margin-top:8px; padding:6px 10px; border-radius:6px; background:#e65100; color:white; text-decoration:none; font-weight:600;}
+    footer {text-align:center; padding:10px; color:#666; font-size:14px;}
+  </style>
+</head>
+<body>
+
+<header>
+  आ. विश्वजीत कदम
+  <button class="reload" onclick="fetchAndFilter()">🔄</button>
+</header>
+
+<div class="container">
+  <h2>दौरा कार्यक्रम</h2>
+  <div class="filter-box">
+    <input type="text" id="searchInput" placeholder="कार्यक्रम शोधा (दिनांक, ठिकाण, विवरण)">
+    <input type="date" id="dateFilter">
+    <button id="clearBtn">फिल्टर काढा</button>
+  </div>
+  <div id="eventsContainer">लोड होत आहे...</div>
+</div>
+
+<footer>© २०२५ आ. विश्वजीत कदम | सर्व हक्क राखीव</footer>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD7dNWujSZFUSat3zKH0lXf8hNZKCv6-XU",
+    authDomain: "schedule-balasaheb.firebaseapp.com",
+    projectId: "schedule-balasaheb"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const container = document.getElementById('eventsContainer');
+  const searchInput = document.getElementById('searchInput');
+  const dateFilter = document.getElementById('dateFilter');
+  const clearBtn = document.getElementById('clearBtn');
+  let allEvents = [];
+
+  async function fetchAndFilter(){
+    try {
+      const snapshot = await db.collection('events').orderBy('date').get();
+      allEvents = snapshot.docs.map(doc=>doc.data());
+      filterEvents();
+    } catch(err) {
+      container.innerHTML = "कार्यक्रम लोड करता आले नाहीत.";
+      console.error(err);
+    }
+  }
+
+  function filterEvents(){
+    const q = searchInput.value.toLowerCase();
+    const d = dateFilter.value;
+    const filtered = allEvents.filter(ev=>{
+      const text = `${ev.title} ${ev.date} ${ev.place} ${ev.description}`.toLowerCase();
+      const matchesSearch = !q || text.includes(q);
+      const matchesDate = !d || (ev.date && ev.date.startsWith(d));
+      return matchesSearch && matchesDate;
+    });
+    render(filtered);
+  }
+
+  function render(events){
+    container.innerHTML="";
+    if(!events.length){ container.innerHTML="<p>सध्या कोणतेही कार्यक्रम उपलब्ध नाहीत.</p>"; return; }
+    events.forEach(ev=>{
+      const div=document.createElement("div");
+      const formattedDate = ev.date ? new Date(ev.date).toLocaleDateString('mr-IN',{day:'numeric', month:'long', year:'numeric'}) : "";
+      div.className="event";
+      div.innerHTML=`
+        <h3>${ev.title}</h3>
+        <p><strong>दिनांक:</strong> ${formattedDate}</p>
+        <p><strong>ठिकाण:</strong> ${ev.place}</p>
+        ${ev.map_url?`<a class="map-link" href="${ev.map_url}" target="_blank">नकाशावर पहा</a>`:""}
+        <p><strong>विवरण:</strong> ${ev.description}</p>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  searchInput.addEventListener("input", filterEvents);
+  dateFilter.addEventListener("change", filterEvents);
+  clearBtn.addEventListener("click", ()=>{ searchInput.value=""; dateFilter.value=""; render(allEvents); });
+
+  fetchAndFilter();
+</script>
+</body>
+</html>
