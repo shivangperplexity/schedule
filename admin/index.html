@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Admin Panel - दौरा कार्यक्रम</title>
 
-  <!-- Netlify Identity (login/signup support) -->
+  <!-- Netlify Identity (login/signup) -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
   <!-- Netlify CMS -->
@@ -56,14 +56,13 @@
     <a href="../index.html" class="back-link">🏠 मुख्य पृष्ठ</a>
   </header>
 
-  <!-- Netlify CMS root -->
+  <!-- CMS root -->
   <div id="nc-root"></div>
 
   <script>
-    // Initialize Netlify CMS
     NetlifyCmsApp.init();
 
-    // Enable Netlify Identity login
+    // Netlify Identity login handling
     if (window.netlifyIdentity) {
       window.netlifyIdentity.on("init", user => {
         if (!user) {
