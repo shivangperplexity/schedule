@@ -2,117 +2,23 @@
 <html lang="mr">
 <head>
   <meta charset="UTF-8">
-  <title>दौरा कार्यक्रम</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: "Noto Sans Devanagari", sans-serif;
-      background: #f8f9fa;
-      color: #222;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      background: #800000;
-      color: #fff;
-      padding: 1rem;
-      font-size: 1.5rem;
-    }
-    #events {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
-    }
-    .event {
-      background: #fff;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      text-align: left;
-    }
-    .event h2 {
-      margin: 0 0 0.5rem 0;
-      color: #800000;
-    }
-    .event small {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #555;
-    }
-    .event a {
-      color: #0066cc;
-    }
-  </style>
+  <title>कार्यक्रम वेळापत्रक</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>दौरा कार्यक्रम</header>
-  <div id="events">लोड होत आहे...</div>
+  <header>
+    <h1>कार्यक्रम वेळापत्रक</h1>
+    <button class="reload-btn" onclick="location.reload()">🔄</button>
+  </header>
 
-  <script>
-    async function loadEvents() {
-      try {
-        const response = await fetch("https://api.github.com/repos/shivangperplexity/schedule/contents/events");
-        if (!response.ok) throw new Error("Failed to fetch events");
+  <main id="events-container">
+    <p>कार्यक्रम लोड होत आहेत...</p>
+  </main>
 
-        const files = await response.json();
-        const events = [];
+  <footer>
+    <p>© 2025 आपले नाव | सर्व हक्क राखीव</p>
+  </footer>
 
-        for (const file of files) {
-          if (file.name.endsWith(".md")) {
-            const res = await fetch(file.download_url);
-            const text = await res.text();
-
-            // Extract frontmatter only
-            const match = /^---([\s\S]*?)---/m.exec(text);
-            if (!match) continue;
-            const frontmatter = match[1];
-
-            const data = {};
-            frontmatter.split("\n").forEach(line => {
-              const [key, ...rest] = line.split(":");
-              if (key) data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
-            });
-
-            events.push({
-              title: data.title || "कार्यक्रम",
-              date: data.date || "",
-              place: data.place || "",
-              map_url: data.map_url || "",
-              description: data.description || ""
-            });
-          }
-        }
-
-        // Sort by date
-        events.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        // Display
-        const container = document.getElementById("events");
-        container.innerHTML = "";
-        if (events.length === 0) {
-          container.innerHTML = "<p>कोणतेही कार्यक्रम सापडले नाहीत.</p>";
-        } else {
-          events.forEach(ev => {
-            const div = document.createElement("div");
-            div.className = "event";
-            div.innerHTML = `
-              <h2>${ev.title}</h2>
-              <small>दिनांक: ${ev.date} | ठिकाण: ${ev.place}</small>
-              ${ev.map_url ? `<a href="${ev.map_url}" target="_blank">Google नकाशा</a><br>` : ""}
-              <p>${ev.description}</p>
-            `;
-            container.appendChild(div);
-          });
-        }
-      } catch (err) {
-        document.getElementById("events").innerHTML = "कार्यक्रम लोड करता आले नाहीत.";
-        console.error(err);
-      }
-    }
-
-    loadEvents();
-  </script>
+  <script src="index.js"></script>
 </body>
 </html>
