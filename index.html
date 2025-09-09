@@ -2,9 +2,8 @@
 <html lang="mr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>दौरा कार्यक्रम - आ. विश्वजीत कदम</title>
-
   <style>
     body {
       margin: 0;
@@ -163,42 +162,12 @@ let allEvents = [];
 
 async function loadEvents() {
   try {
-    const res = await fetch("https://api.github.com/repos/shivangperplexity/schedule/contents/events");
+    const res = await fetch("/.netlify/functions/get-events");
     if (!res.ok) throw new Error("Failed to fetch events");
 
-    const files = await res.json();
-    const events = [];
-
-    for (const file of files) {
-      if (file.name.endsWith(".md")) {
-        // Add cache-busting query
-        const mdRes = await fetch(file.download_url + `?t=${Date.now()}`);
-        const text = await mdRes.text();
-
-        // Parse frontmatter
-        const match = /^---([\s\S]*?)---([\s\S]*)$/m.exec(text);
-        if (!match) continue;
-        const frontmatter = match[1];
-        const body = match[2].trim();
-
-        const data = {};
-        frontmatter.split("\n").forEach(line => {
-          const [key, ...rest] = line.split(":");
-          if (key) data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
-        });
-
-        events.push({
-          title: data.title || "कार्यक्रम",
-          date: data.date || "",
-          place: data.place || "",
-          map_url: data.map_url || "",
-          description: body
-        });
-      }
-    }
-
-    events.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const events = await res.json();
     allEvents = events;
+
     render(events);
 
   } catch (err) {
