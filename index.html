@@ -50,7 +50,6 @@
   <header>दौरा कार्यक्रम</header>
   <div id="events">लोड होत आहे...</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     async function loadEvents() {
       try {
@@ -65,11 +64,10 @@
             const res = await fetch(file.download_url);
             const text = await res.text();
 
-            // Extract frontmatter manually
-            const match = /^---([\s\S]*?)---([\s\S]*)$/m.exec(text);
+            // Extract frontmatter only
+            const match = /^---([\s\S]*?)---/m.exec(text);
             if (!match) continue;
             const frontmatter = match[1];
-            const body = match[2];
 
             const data = {};
             frontmatter.split("\n").forEach(line => {
@@ -82,7 +80,7 @@
               date: data.date || "",
               place: data.place || "",
               map_url: data.map_url || "",
-              description: body.trim()
+              description: data.description || ""
             });
           }
         }
