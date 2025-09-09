@@ -1,77 +1,51 @@
 <!DOCTYPE html>
-<html lang="mr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Admin Panel - दौरा कार्यक्रम</title>
-
-  <!-- Netlify Identity (login/signup) -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-  <!-- Netlify CMS -->
-  <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
-
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- UI Styling -->
   <style>
     body {
       margin: 0;
-      font-family: "Noto Sans Devanagari", sans-serif;
-      background: #fffaf5;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff8f0;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
     }
-
     header {
-      background: #e65100;
-      color: white;
-      padding: 15px;
+      background: #ff6f00;
+      width: 100%;
+      padding: 1rem;
       text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      position: relative;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    }
-
-    header .back-link {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      background: rgba(255,255,255,0.2);
       color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      text-decoration: none;
-      font-size: 14px;
+      font-size: 1.5rem;
+      font-weight: bold;
     }
-
-    #nc-root {
-      height: calc(100vh - 60px);
+    #cms {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 900px;
+      flex: 1;
     }
   </style>
 </head>
 <body>
+  <header>Admin Panel</header>
+  <div id="cms"></div>
 
-  <header>
-    📝 दौरा कार्यक्रम - Admin Panel
-    <a href="../index.html" class="back-link">🏠 मुख्य पृष्ठ</a>
-  </header>
-
-  <!-- CMS root -->
-  <div id="nc-root"></div>
+  <!-- Correct Netlify CMS script -->
+  <script src="https://unpkg.com/netlify-cms-app@2.15.72/dist/netlify-cms.js"></script>
 
   <script>
-    // Initialize CMS
-    CMS.init();
-
-    // Netlify Identity login handling
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.reload();
-          });
-        }
-      });
+    if (window.CMS) {
+      CMS.init();
+    } else {
+      console.error("CMS failed to load.");
     }
   </script>
 </body>
