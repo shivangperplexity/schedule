@@ -4,120 +4,77 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - दौरा कार्यक्रम</title>
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-
 <style>
-body {font-family:"Noto Sans Devanagari",sans-serif; margin:0; background:#f7f7f7; color:#333;}
-header {background:#e65100; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; position:relative;}
-.container {max-width:700px; margin:auto; padding:15px;}
-input, textarea, button {width:100%; padding:10px; margin:5px 0; border-radius:6px; border:1px solid #ccc; outline:none;}
-input:focus, textarea:focus{border-color:#e65100;}
-button {background:#e65100; color:white; border:none; cursor:pointer; font-weight:bold;}
-button:hover{background:#bf360c;}
-.event-item {background:white; padding:10px; margin:10px 0; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-.event-item button{width:auto; margin-left:10px; background:#d32f2f;}
-#loginBox, #adminPanel{max-width:500px; margin:auto;}
+body { margin:0; font-family: "Noto Sans Devanagari", sans-serif; background:#f7f7f7; }
+header { background:#e65100; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
+.container { max-width:600px; margin:20px auto; padding:15px; background:white; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+h2 { text-align:center; color:#e65100; }
+input, textarea, button { width:100%; padding:10px; margin:5px 0; border-radius:6px; border:1px solid #ccc; outline:none; }
+input:focus, textarea:focus { border-color:#e65100; box-shadow:0 0 5px rgba(230,81,0,0.5);}
+button { background:#e65100; color:white; border:none; font-weight:bold; cursor:pointer; }
+button:hover { background:#bf360c; }
 </style>
 </head>
 <body>
-
-<header>दौरा कार्यक्रम व्यवस्थापन</header>
-
-<div id="loginBox">
-  <input type="email" id="email" placeholder="ईमेल">
-  <input type="password" id="password" placeholder="पासवर्ड">
-  <button id="loginBtn">लॉगिन</button>
-  <p id="loginError" style="color:red"></p>
-</div>
-
-<div id="adminPanel" style="display:none;" class="container">
-  <h2>कार्यक्रम जोडा</h2>
+<header>Admin Panel - दौरा कार्यक्रम</header>
+<div class="container">
+  <h2>नवीन कार्यक्रम जोडा</h2>
   <input type="text" id="title" placeholder="शीर्षक">
   <input type="date" id="date">
   <input type="text" id="place" placeholder="ठिकाण">
-  <input type="url" id="map_url" placeholder="Google नकाशा लिंक">
-  <textarea id="description" placeholder="विवरण"></textarea>
-  <button id="addEventBtn">कार्यक्रम जोडा</button>
-  <button id="logoutBtn">लॉगआउट</button>
-
-  <h3>सध्याचे कार्यक्रम</h3>
-  <div id="eventList"></div>
+  <input type="text" id="map_url" placeholder="Google नकाशा लिंक (ऐच्छिक)">
+  <textarea id="description" rows="5" placeholder="विवरण"></textarea>
+  <button id="addBtn">कार्यक्रम जोडा</button>
+  <p id="status"></p>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyD7dNWujSZFUSat3zKH0lXf8hNZKCv6-XU",
   authDomain: "schedule-balasaheb.firebaseapp.com",
-  projectId: "schedule-balasaheb"
+  projectId: "schedule-balasaheb",
+  storageBucket: "schedule-balasaheb.appspot.com",
+  messagingSenderId: "614219892733",
+  appId: "1:614219892733:web:15f60c89267014cab37b94",
+  measurementId: "G-0R21W5VRQ7"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
 
-const loginBox = document.getElementById('loginBox');
-const adminPanel = document.getElementById('adminPanel');
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const loginError = document.getElementById('loginError');
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-loginBtn.addEventListener('click', async ()=>{
-  const email = document.getElementById('email').value;
-  const pass = document.getElementById('password').value;
-  try { await auth.signInWithEmailAndPassword(email, pass); }
-  catch(err){ loginError.textContent = err.message; }
-});
+const title = document.getElementById('title');
+const date = document.getElementById('date');
+const place = document.getElementById('place');
+const map_url = document.getElementById('map_url');
+const description = document.getElementById('description');
+const addBtn = document.getElementById('addBtn');
+const status = document.getElementById('status');
 
-logoutBtn.addEventListener('click', ()=>auth.signOut());
-
-auth.onAuthStateChanged(user=>{
-  if(user){
-    loginBox.style.display='none';
-    adminPanel.style.display='block';
-    loadAdminEvents();
-  } else {
-    loginBox.style.display='block';
-    adminPanel.style.display='none';
+addBtn.addEventListener('click', async ()=>{
+  const data = {
+    title: title.value.trim(),
+    date: date.value,
+    place: place.value.trim(),
+    map_url: map_url.value.trim(),
+    description: description.value.trim()
+  };
+  if(!data.title || !data.date || !data.place || !data.description){
+    status.textContent = "कृपया सर्व आवश्यक माहिती भरा.";
+    return;
+  }
+  status.textContent = "लोड होत आहे...";
+  try {
+    await addDoc(collection(db, "events"), data);
+    status.textContent = "कार्यक्रम यशस्वीरित्या जोडला.";
+    title.value=""; date.value=""; place.value=""; map_url.value=""; description.value="";
+  } catch(err){
+    console.error(err);
+    status.textContent = "चुक झाली, कृपया पुन्हा प्रयत्न करा.";
   }
 });
-
-// Add Event
-document.getElementById('addEventBtn').addEventListener('click', async ()=>{
-  const title = document.getElementById('title').value;
-  const date = document.getElementById('date').value;
-  const place = document.getElementById('place').value;
-  const map_url = document.getElementById('map_url').value;
-  const description = document.getElementById('description').value;
-
-  if(!title || !date) { alert("शीर्षक आणि दिनांक आवश्यक आहेत"); return; }
-  await db.collection('events').add({title,date,place,map_url,description});
-  loadAdminEvents();
-});
-
-// Load Admin Events
-async function loadAdminEvents(){
-  const snapshot = await db.collection('events').orderBy('date').get();
-  const eventList = document.getElementById('eventList');
-  eventList.innerHTML='';
-  snapshot.docs.forEach(doc=>{
-    const ev = doc.data();
-    const div=document.createElement('div');
-    div.className="event-item";
-    div.innerHTML=`<strong>${ev.title}</strong> | ${ev.date} | ${ev.place} 
-      <button onclick="deleteEvent('${doc.id}')">Delete</button>`;
-    eventList.appendChild(div);
-  });
-}
-
-// Delete Event
-window.deleteEvent = async (id)=>{
-  if(confirm("हक्काने हटवायचं आहे का?")){
-    await db.collection('events').doc(id).delete();
-    loadAdminEvents();
-  }
-};
 </script>
 </body>
 </html>
