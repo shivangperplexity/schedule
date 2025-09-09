@@ -1,0 +1,16 @@
+[
+  {
+    "title": "कार्यक्रम १",
+    "date": "2025-09-12",
+    "place": "सांगली",
+    "map_url": "https://maps.google.com/?q=सांगली",
+    "description": "शेतकरी मेळावा व चर्चा सत्र"
+  },
+  {
+    "title": "कार्यक्रम २",
+    "date": "2025-09-15",
+    "place": "मिरज",
+    "map_url": "https://maps.google.com/?q=मिरज",
+    "description": "युवक संवाद व रोजगार मार्गदर्शन"
+  }
+]
