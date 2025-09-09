@@ -1,22 +1,56 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - दौरा कार्यक्रम</title>
+  <meta charset="UTF-8">
+  <title>कार्यक्रम व्यवस्थापन</title>
+  <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-<h2 style="text-align:center;margin-top:20px;">दौरा कार्यक्रम व्यवस्थापक</h2>
+  <header>
+    <h1>कार्यक्रम व्यवस्थापन</h1>
+    <button class="reload-btn" onclick="location.reload()">🔄</button>
+  </header>
 
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
+  <main>
+    <!-- Login -->
+    <div id="login-section">
+      <button id="login-btn">🔑 लॉगिन करा</button>
+    </div>
 
-<script>
-  // Initialize Netlify Identity
-  netlifyIdentity.init();
-  netlifyIdentity.on("login", user => {
-    window.location.href = "/admin/"; // reload CMS after login
-  });
-</script>
+    <!-- Event List -->
+    <div id="events-section" style="display:none;">
+      <h2>विद्यमान कार्यक्रम</h2>
+      <ul id="event-list"></ul>
+
+      <!-- Add/Edit Form -->
+      <h2>नवीन कार्यक्रम जोडा / संपादित करा</h2>
+      <form id="event-form">
+        <input type="hidden" id="event-id">
+
+        <label>शीर्षक:</label>
+        <input type="text" id="title" required>
+
+        <label>तारीख:</label>
+        <input type="date" id="date" required>
+
+        <label>ठिकाण:</label>
+        <input type="text" id="place" required>
+
+        <label>नकाशा दुवा:</label>
+        <input type="url" id="map">
+
+        <label>वर्णन:</label>
+        <textarea id="description"></textarea>
+
+        <button type="submit">💾 जतन करा</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 आपले नाव | सर्व हक्क राखीव</p>
+  </footer>
+
+  <script src="admin.js"></script>
 </body>
 </html>
