@@ -1,0 +1,104 @@
+body {
+  margin: 0;
+  font-family: "Noto Sans Devanagari", sans-serif;
+  background: #f7f7f7;
+}
+
+header {
+  background: #e65100;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 15px;
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.filter-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filter-box input, .filter-box button {
+  width: 95%;
+  max-width: 500px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.3s;
+}
+
+.filter-box input:focus {
+  border-color: #e65100;
+  box-shadow: 0 0 5px rgba(230,81,0,0.5);
+}
+
+.filter-box button {
+  background: #e65100;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.filter-box button:hover {
+  background: #bf360c;
+}
+
+.event {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(30px);
+  opacity: 0;
+  animation: slideUp 0.8s ease forwards;
+}
+
+.event h3 {
+  margin: 0;
+  color: #e65100;
+  font-size: 18px;
+}
+
+.event p {
+  margin: 5px 0;
+  color: #555;
+  font-size: 15px;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+footer {
+  text-align: center;
+  padding: 10px;
+  color: #666;
+  font-size: 14px;
+}
