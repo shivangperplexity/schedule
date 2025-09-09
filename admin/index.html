@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Admin Panel - दौरा कार्यक्रम</title>
+
+  <!-- Netlify CMS -->
+  <script src="https://unpkg.com/netlify-cms-app@^2.0.0/dist/netlify-cms.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans Devanagari", sans-serif;
+      background: #f7f7f7;
+    }
+
+    header {
+      background: #e65100;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      position: relative;
+    }
+
+    header .back-link {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .cms-container {
+      height: calc(100vh - 60px);
+    }
+
+    /* CMS iframe styling */
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    Admin Panel
+    <a href="../index.html" class="back-link">🏠 मुख्य पृष्ठ</a>
+  </header>
+
+  <div class="cms-container">
+    <!-- Netlify CMS will auto-inject here -->
+  </div>
+
+  <script>
+    // Initialize Netlify CMS
+    NetlifyCmsApp.init();
+  </script>
+</body>
+</html>
