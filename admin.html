@@ -3,74 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>दौरा कार्यक्रम Admin</title>
+<title>दौरा कार्यक्रम व्यवस्थापन</title>
 <style>
-body{margin:0;font-family:"Noto Sans Devanagari",sans-serif;background:#f7f7f7;padding:20px;}
-h2,h3{text-align:center;color:#e65100;}
-form{max-width:500px;margin:auto;display:flex;flex-direction:column;gap:10px;}
-input,textarea,button{padding:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;outline:none;}
-input:focus,textarea:focus{border-color:#e65100;box-shadow:0 0 5px rgba(230,81,0,0.5);}
-button{background:#e65100;color:white;border:none;cursor:pointer;font-weight:bold;}
-button:hover{background:#bf360c;}
-.event-list{max-width:700px;margin:20px auto;}
-.event-item{background:white;padding:10px;margin-bottom:10px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;}
+  body { margin:0; font-family:"Noto Sans Devanagari", sans-serif; background:#f7f7f7; }
+  header { background:#e65100; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
+  .container { max-width:800px; margin:auto; padding:15px; }
+  h2 { text-align:center; color:#333; margin-bottom:10px; font-size:22px; }
+  form input, form button { width:95%; max-width:500px; padding:10px; margin:5px 0; font-size:16px; border-radius:8px; border:1px solid #ccc; outline:none; }
+  form input:focus { border-color:#e65100; box-shadow:0 0 5px rgba(230,81,0,0.5); }
+  form button { background:#e65100; color:white; border:none; cursor:pointer; font-weight:bold; }
+  form button:hover { background:#bf360c; }
+  .event-list { margin-top:20px; }
+  .event { background:white; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0px 4px 8px rgba(0,0,0,0.1); }
+  .event h3 { margin:0; color:#e65100; font-size:18px; display:inline-block; }
+  .event p { margin:5px 0; color:#555; font-size:15px; }
+  .event button { background:#bf360c; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; margin-left:5px; }
+  #login-section { text-align:center; margin-top:50px; }
+  footer { text-align:center; padding:10px; color:#666; font-size:14px; }
 </style>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
 
-<h2>दौरा कार्यक्रम व्यवस्थापक</h2>
+<header>दौरा कार्यक्रम व्यवस्थापन</header>
 
-<div id="login-section" style="text-align:center;">
-<button id="login-btn">लॉगिन</button>
+<div class="container">
+
+  <!-- Login Section -->
+  <div id="login-section">
+    <h2>कृपया लॉगिन करा</h2>
+    <button onclick="identity.open()">लॉगिन</button>
+  </div>
+
+  <!-- Admin Section -->
+  <div id="admin-section" style="display:none;">
+    <h2>नवीन कार्यक्रम जोडा</h2>
+    <form id="event-form">
+      <input type="text" name="title" placeholder="शीर्षक" required>
+      <input type="date" name="date" placeholder="दिनांक" required>
+      <input type="text" name="place" placeholder="ठिकाण" required>
+      <input type="url" name="map_url" placeholder="Google नकाशा लिंक (optional)">
+      <input type="text" name="description" placeholder="विवरण" required>
+      <button type="submit">जोडा / अपडेट करा</button>
+    </form>
+
+    <div class="event-list" id="event-list">
+      <!-- Existing events will be rendered here -->
+    </div>
+  </div>
+
 </div>
 
-<div id="admin-section" style="display:none;">
-<h3>नवीन कार्यक्रम जोडा</h3>
-<form id="event-form">
-<input type="text" name="title" placeholder="शीर्षक" required>
-<input type="date" name="date" required>
-<input type="text" name="place" placeholder="ठिकाण" required>
-<input type="text" name="map_url" placeholder="Google नकाशा लिंक">
-<textarea name="description" placeholder="विवरण"></textarea>
-<button type="submit">जतन करा</button>
-</form>
+<footer>© २०२५ आ. विश्वजीत कदम | सर्व हक्क राखीव</footer>
 
-<div class="event-list" id="event-list"></div>
-</div>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
+// Netlify Identity
 const identity = netlifyIdentity;
-
-// Initialize widget
 identity.init();
 
-// Avoid reload loops — show UI only after proper check
 identity.on('init', user => {
-  if(user){
-    showAdminPanel();
-  } else {
-    showLogin();
-  }
+  if(user) showAdminPanel();
+  else showLogin();
 });
 
-// Optional: handle login/logout without auto reload
 identity.on('login', user => showAdminPanel());
 identity.on('logout', () => showLogin());
 
-// Helper functions
 function showAdminPanel(){
   document.getElementById('login-section').style.display = 'none';
   document.getElementById('admin-section').style.display = 'block';
-  loadEvents();  // load events from JSON
+  loadEvents();
 }
 
 function showLogin(){
   document.getElementById('login-section').style.display = 'block';
   document.getElementById('admin-section').style.display = 'none';
 }
-</script>
 
+// LocalStorage CRUD
+function loadEvents(){
+  const list = document.getElementById('event-list');
+  list.innerHTML = '';
+  let events = JSON.parse(localStorage.getItem('events') || '[]');
+  events.forEach((event, index)=>{
+    const div = document.createElement('div');
+    div.className = 'event';
+    div.innerHTML = `
+      <h3>${event.title}</h3>
+      <p><strong>दिनांक:</strong> ${event.date}</p>
+      <p><strong>ठिकाण:</strong> ${event.place}</p>
+      <p><strong>विवरण:</strong> ${event.description}</p>
+      ${event.map_url ? `<p><a href="${event.map_url}" target="_blank">Google नकाशा</a></p>` : ''}
+      <button onclick="editEvent(${index})">संपादित करा</button>
+      <button onclick="deleteEvent(${index})">काढा</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('event-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(this).entries());
+  let events = JSON.parse(localStorage.getItem('events') || '[]');
+  
+  if(this.dataset.editIndex !== undefined){
+    events[this.dataset.editIndex] = data;
+    delete this.dataset.editIndex;
+  } else {
+    events.push(data);
+  }
+  
+  localStorage.setItem('events', JSON.stringify(events));
+  this.reset();
+  loadEvents();
+});
+
+function editEvent(index){
+  let events = JSON.parse(localStorage.getItem('events') || '[]');
+  const event = events[index];
+  const form = document.getElementById('event-form');
+  Object.keys(event).forEach(key=>{
+    form.elements[key].value = event[key];
+  });
+  form.dataset.editIndex = index;
+}
+
+function deleteEvent(index){
+  if(confirm('तुम्हाला नक्की हा कार्यक्रम काढायचा आहे का?')){
+    let events = JSON.parse(localStorage.getItem('events') || '[]');
+    events.splice(index,1);
+    localStorage.setItem('events', JSON.stringify(events));
+    loadEvents();
+  }
+}
+</script>
 
 </body>
 </html>
