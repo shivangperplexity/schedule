@@ -51,19 +51,18 @@ const dateFilter = document.getElementById("dateFilter");
 const clearBtn = document.getElementById("clearBtn");
 const eventsContainer = document.getElementById("events-container");
 
-let events = [];
-
-async function loadEvents() {
-  const res = await fetch('/.netlify/functions/save-events');
-  events = await res.json();
+// Fetch events from GitHub via Netlify CMS (Markdown or JSON)
+async function loadEvents(){
+  const res = await fetch('https://raw.githubusercontent.com/shivangperplexity/schedule/main/events.json');
+  const events = await res.json();
   renderEvents(events);
 }
 
-function renderEvents(eventsToRender){
+function renderEvents(events){
   eventsContainer.innerHTML='';
-  eventsToRender.forEach(event=>{
-    const div = document.createElement('div');
-    div.className = 'event';
+  events.forEach(event=>{
+    const div=document.createElement('div');
+    div.className='event';
     div.innerHTML=`
       <h3>${event.title}</h3>
       <p><strong>दिनांक:</strong> ${event.date}</p>
@@ -78,22 +77,21 @@ function renderEvents(eventsToRender){
 function filterEvents(){
   const searchValue = searchInput.value.toLowerCase();
   const selectedDate = dateFilter.value;
-  const filtered = events.filter(event=>{
-    const text = `${event.title} ${event.date} ${event.place} ${event.description}`.toLowerCase();
-    const matchesSearch = text.includes(searchValue);
-    const matchesDate = !selectedDate || event.date === selectedDate;
-    return matchesSearch && matchesDate;
+  const filtered = eventsContainer.children ? Array.from(eventsContainer.children) : [];
+  loadEvents().then(events=>{
+    const filteredEvents = events.filter(event=>{
+      const text = `${event.title} ${event.date} ${event.place} ${event.description}`.toLowerCase();
+      const matchesSearch = text.includes(searchValue);
+      const matchesDate = !selectedDate || event.date === selectedDate;
+      return matchesSearch && matchesDate;
+    });
+    renderEvents(filteredEvents);
   });
-  renderEvents(filtered);
 }
 
-searchInput.addEventListener('keyup',filterEvents);
-dateFilter.addEventListener('change',filterEvents);
-clearBtn.addEventListener('click',()=>{
-  searchInput.value='';
-  dateFilter.value='';
-  renderEvents(events);
-});
+searchInput.addEventListener('keyup', filterEvents);
+dateFilter.addEventListener('change', filterEvents);
+clearBtn.addEventListener('click', () => { searchInput.value=''; dateFilter.value=''; loadEvents(); });
 
 loadEvents();
 </script>
