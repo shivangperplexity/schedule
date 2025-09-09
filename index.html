@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>दौरा कार्यक्रम - आ. विश्वजीत कदम</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <header>
+    आ. विश्वजीत कदम
+  </header>
+
+  <div class="container">
+    <h2>दौरा कार्यक्रम</h2>
+
+    <!-- शोध व दिनांक फिल्टर -->
+    <div class="filter-box">
+      <input type="text" id="searchInput" placeholder="कार्यक्रम शोधा (दिनांक, ठिकाण, विवरण)">
+      <input type="date" id="dateFilter">
+      <button id="clearBtn">फिल्टर काढा</button>
+    </div>
+
+    <!-- कार्यक्रम -->
+    <div id="events"></div>
+  </div>
+
+  <footer>
+    © २०२५ आ. विश्वजीत कदम | सर्व हक्क राखीव
+  </footer>
+
+  <script>
+    async function loadEvents() {
+      const repo = "YOUR_GITHUB_USERNAME/doura-karyakram"; // 👉 इथे तुमचा GitHub repo टाका
+      const branch = "main";
+
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/events?ref=${branch}`);
+      if (!res.ok) {
+        document.getElementById("events").innerHTML = "<p>कार्यक्रम उपलब्ध नाहीत.</p>";
+        return;
+      }
+
+      const files = await res.json();
+      let events = [];
+
+      for (let file of files) {
+        if (file.name.endsWith(".md")) {
+          const raw = await fetch(file.download_url).then(r => r.text());
+          const lines = raw.split("\n");
+          let ev = {};
+          lines.forEach(line => {
+            if (line.startsWith("title:")) ev.title = line.replace("title:", "").trim();
+            if (line.startsWith("date:")) ev.date = new Date(line.replace("date:", "").trim());
+            if (line.startsWith("location:")) ev.location = line.replace("location:", "").trim();
+            if (line.startsWith("location_url:")) ev.location_url = line.replace("location_url:", "").trim();
+          });
+          ev.description = marked.parse(raw.split("---").pop().trim());
+          events.push(ev);
+        }
+      }
+
+      // फक्त येणारे कार्यक्रम दाखवा
+      const today = new Date();
+      events = events.filter(e => e.date >= today);
+      events.sort((a, b) => a.date - b.date);
+
+      const container = document.getElementById("events");
+      container.innerHTML = "";
+      let delay = 0.2;
+
+      events.forEach(ev => {
+        const div = document.createElement("div");
+        div.className = "event";
+        div.style.animationDelay = `${delay}s`;
+        delay += 0.2;
+
+        div.innerHTML = `
+          <h3>${ev.title}</h3>
+          <p><strong>दिनांक:</strong> ${ev.date.toLocaleDateString("mr-IN", { day: "numeric", month: "long", year: "numeric" })}</p>
+          <p><strong>ठिकाण:</strong> ${ev.location}</p>
+          <p><strong>नकाशा:</strong> <a href="${ev.location_url}" target="_blank">Google Map</a></p>
+          <p><strong>विवरण:</strong> ${ev.description}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    loadEvents();
+
+    // फिल्टर लॉजिक
+    const searchInput = document.getElementById("searchInput");
+    const dateFilter = document.getElementById("dateFilter");
+    const clearBtn = document.getElementById("clearBtn");
+
+    function filterEvents() {
+      const searchValue = searchInput.value.toLowerCase();
+      const selectedDate = dateFilter.value;
+
+      document.querySelectorAll(".event").forEach(event => {
+        const text = event.innerText.toLowerCase();
+        let matchesSearch = text.includes(searchValue);
+        let matchesDate = !selectedDate || event.innerText.includes(selectedDate);
+
+        event.style.display = (matchesSearch && matchesDate) ? "block" : "none";
+      });
+    }
+
+    searchInput.addEventListener("keyup", filterEvents);
+    dateFilter.addEventListener("change", filterEvents);
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      dateFilter.value = "";
+      document.querySelectorAll(".event").forEach(event => event.style.display = "block");
+    });
+  </script>
+</body>
+</html>
