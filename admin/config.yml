@@ -1,0 +1,19 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "events"
+    label: "दौरा कार्यक्रम"
+    folder: "events"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "शीर्षक", name: "title", widget: "string" }
+      - { label: "दिनांक", name: "date", widget: "date" }
+      - { label: "ठिकाण", name: "place", widget: "string" }
+      - { label: "Google नकाशा लिंक", name: "map_url", widget: "string", required: false }
+      - { label: "विवरण", name: "description", widget: "text" }
