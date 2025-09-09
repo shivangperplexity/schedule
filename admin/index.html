@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Admin Panel - दौरा कार्यक्रम</title>
 
+  <!-- Netlify Identity (for login) -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
   <!-- Netlify CMS -->
   <script src="https://unpkg.com/netlify-cms-app@^2.0.0/dist/netlify-cms.js"></script>
 
@@ -39,15 +42,8 @@
       text-decoration: none;
     }
 
-    .cms-container {
+    #nc-root {
       height: calc(100vh - 60px);
-    }
-
-    /* CMS iframe styling */
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
     }
   </style>
 </head>
@@ -58,9 +54,8 @@
     <a href="../index.html" class="back-link">🏠 मुख्य पृष्ठ</a>
   </header>
 
-  <div class="cms-container">
-    <!-- Netlify CMS will auto-inject here -->
-  </div>
+  <!-- Netlify CMS will render here -->
+  <div id="nc-root"></div>
 
   <script>
     // Initialize Netlify CMS
