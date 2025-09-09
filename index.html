@@ -2,112 +2,117 @@
 <html lang="mr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>दौरा कार्यक्रम - विश्वजीत कदम</title>
+  <title>दौरा कार्यक्रम</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { margin: 0; font-family: "Noto Sans Devanagari", sans-serif; background: #f7f7f7; }
-    header { background: #e65100; color: white; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; }
-    .container { max-width: 800px; margin: auto; padding: 15px; }
-    h2 { text-align: center; color: #333; margin-bottom: 10px; font-size: 22px; }
-    .filter-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
-    .filter-box input, .filter-box button { width: 95%; max-width: 500px; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; outline: none; transition: 0.3s; }
-    .filter-box input:focus { border-color: #e65100; box-shadow: 0 0 5px rgba(230,81,0,0.5); }
-    .filter-box button { background: #e65100; color: white; border: none; cursor: pointer; font-weight: bold; }
-    .filter-box button:hover { background: #bf360c; }
-    .event { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0px 4px 8px rgba(0,0,0,0.1); transform: translateY(30px); opacity: 0; animation: slideUp 0.8s ease forwards; }
-    .event:nth-child(1) { animation-delay: 0.2s; } .event:nth-child(2) { animation-delay: 0.4s; }
-    .event h3 { margin: 0; color: #e65100; font-size: 18px; }
-    .event p { margin: 5px 0; color: #555; font-size: 15px; }
-    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    footer { text-align: center; padding: 10px; color: #666; font-size: 14px; }
+    body {
+      font-family: "Noto Sans Devanagari", sans-serif;
+      background: #f8f9fa;
+      color: #222;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: #800000;
+      color: #fff;
+      padding: 1rem;
+      font-size: 1.5rem;
+    }
+    #events {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    .event {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    .event h2 {
+      margin: 0 0 0.5rem 0;
+      color: #800000;
+    }
+    .event small {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+    .event a {
+      color: #0066cc;
+    }
   </style>
 </head>
 <body>
+  <header>दौरा कार्यक्रम</header>
+  <div id="events">लोड होत आहे...</div>
 
-  <header>आ. विश्वजीत कदम</header>
-  <div class="container">
-    <h2>दौरा कार्यक्रम</h2>
-
-    <!-- Filters -->
-    <div class="filter-box">
-      <input type="text" id="searchInput" placeholder="कार्यक्रम शोधा (दिनांक, ठिकाण, विवरण)">
-      <input type="date" id="dateFilter">
-      <button id="clearBtn">फिल्टर काढा</button>
-    </div>
-
-    <!-- Events -->
-    <div id="events-container"></div>
-  </div>
-
-  <footer>© २०२५ आ. विश्वजीत कदम | सर्व हक्क राखीव</footer>
-
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    const searchInput = document.getElementById("searchInput");
-    const dateFilter = document.getElementById("dateFilter");
-    const clearBtn = document.getElementById("clearBtn");
-    const eventsContainer = document.getElementById("events-container");
-    let allEvents = [];
-
     async function loadEvents() {
       try {
-        // Fetch directory listing (Netlify auto-publishes /events)
-        const res = await fetch('/events');
-        if (!res.ok) throw new Error("Cannot load events");
-        const html = await res.text();
+        const response = await fetch("https://api.github.com/repos/shivangperplexity/schedule/contents/events");
+        if (!response.ok) throw new Error("Failed to fetch events");
 
-        // Extract JSON file names from directory listing
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const links = [...doc.querySelectorAll("a")]
-          .map(a => a.getAttribute("href"))
-          .filter(h => h.endsWith(".json"));
+        const files = await response.json();
+        const events = [];
 
-        // Load each event JSON
-        const events = await Promise.all(links.map(l => fetch("/events/" + l).then(r => r.json())));
-        allEvents = events.sort((a,b) => new Date(a.date) - new Date(b.date));
-        renderEvents(allEvents);
+        for (const file of files) {
+          if (file.name.endsWith(".md")) {
+            const res = await fetch(file.download_url);
+            const text = await res.text();
+
+            // Extract frontmatter manually
+            const match = /^---([\s\S]*?)---([\s\S]*)$/m.exec(text);
+            if (!match) continue;
+            const frontmatter = match[1];
+            const body = match[2];
+
+            const data = {};
+            frontmatter.split("\n").forEach(line => {
+              const [key, ...rest] = line.split(":");
+              if (key) data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
+            });
+
+            events.push({
+              title: data.title || "कार्यक्रम",
+              date: data.date || "",
+              place: data.place || "",
+              map_url: data.map_url || "",
+              description: body.trim()
+            });
+          }
+        }
+
+        // Sort by date
+        events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Display
+        const container = document.getElementById("events");
+        container.innerHTML = "";
+        if (events.length === 0) {
+          container.innerHTML = "<p>कोणतेही कार्यक्रम सापडले नाहीत.</p>";
+        } else {
+          events.forEach(ev => {
+            const div = document.createElement("div");
+            div.className = "event";
+            div.innerHTML = `
+              <h2>${ev.title}</h2>
+              <small>दिनांक: ${ev.date} | ठिकाण: ${ev.place}</small>
+              ${ev.map_url ? `<a href="${ev.map_url}" target="_blank">Google नकाशा</a><br>` : ""}
+              <p>${ev.description}</p>
+            `;
+            container.appendChild(div);
+          });
+        }
       } catch (err) {
-        eventsContainer.innerHTML = "<p>कार्यक्रम लोड करता आले नाहीत.</p>";
+        document.getElementById("events").innerHTML = "कार्यक्रम लोड करता आले नाहीत.";
         console.error(err);
       }
     }
-
-    function renderEvents(events) {
-      eventsContainer.innerHTML = "";
-      events.forEach((event, idx) => {
-        const div = document.createElement("div");
-        div.className = "event";
-        div.style.animationDelay = `${0.2 + idx*0.2}s`;
-        div.innerHTML = `
-          <h3>${event.title}</h3>
-          <p><strong>दिनांक:</strong> ${new Date(event.date).toLocaleDateString("mr-IN", { day:"numeric", month:"long", year:"numeric" })}</p>
-          <p><strong>ठिकाण:</strong> ${event.place}</p>
-          <p><strong>विवरण:</strong> ${event.description}</p>
-          ${event.map_url ? `<p><a href="${event.map_url}" target="_blank">📍 नकाशा पहा</a></p>` : ""}
-        `;
-        eventsContainer.appendChild(div);
-      });
-    }
-
-    function filterEvents() {
-      const searchValue = searchInput.value.toLowerCase();
-      const selectedDate = dateFilter.value;
-      const filtered = allEvents.filter(ev => {
-        const text = (ev.title + ev.place + ev.description).toLowerCase();
-        const matchesSearch = text.includes(searchValue);
-        const matchesDate = !selectedDate || ev.date.startsWith(selectedDate);
-        return matchesSearch && matchesDate;
-      });
-      renderEvents(filtered);
-    }
-
-    searchInput.addEventListener("keyup", filterEvents);
-    dateFilter.addEventListener("change", filterEvents);
-    clearBtn.addEventListener("click", () => {
-      searchInput.value = "";
-      dateFilter.value = "";
-      renderEvents(allEvents);
-    });
 
     loadEvents();
   </script>
