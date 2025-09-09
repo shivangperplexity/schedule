@@ -2,35 +2,25 @@
 <html lang="mr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Admin - दौरा कार्यक्रम</title>
 <style>
-body { margin:0; font-family: "Noto Sans Devanagari", sans-serif; background:#f7f7f7; }
+body { font-family:"Noto Sans Devanagari",sans-serif; background:#f7f7f7; margin:0; padding:0; }
 header { background:#e65100; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
-.container { max-width:600px; margin:20px auto; padding:15px; background:white; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-h2 { text-align:center; color:#e65100; }
-input, textarea, button { width:100%; padding:10px; margin:5px 0; border-radius:6px; border:1px solid #ccc; outline:none; }
-input:focus, textarea:focus { border-color:#e65100; box-shadow:0 0 5px rgba(230,81,0,0.5);}
-button { background:#e65100; color:white; border:none; font-weight:bold; cursor:pointer; }
+.container { max-width:600px; margin:30px auto; padding:15px; background:white; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+h2 { text-align:center; color:#e65100; margin-bottom:20px; }
+input, button, textarea, select { width:100%; margin:8px 0; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+button { background:#e65100; color:white; border:none; cursor:pointer; font-weight:bold; }
 button:hover { background:#bf360c; }
+.hidden { display:none; }
+.event-list { margin-top:20px; }
+.event-item { background:#f1f1f1; padding:10px; border-radius:8px; margin-bottom:10px; }
+.event-item button { width:auto; padding:5px 10px; font-size:14px; margin-left:5px; }
 </style>
-</head>
-<body>
-<header>Admin Panel - दौरा कार्यक्रम</header>
-<div class="container">
-  <h2>नवीन कार्यक्रम जोडा</h2>
-  <input type="text" id="title" placeholder="शीर्षक">
-  <input type="date" id="date">
-  <input type="text" id="place" placeholder="ठिकाण">
-  <input type="text" id="map_url" placeholder="Google नकाशा लिंक (ऐच्छिक)">
-  <textarea id="description" rows="5" placeholder="विवरण"></textarea>
-  <button id="addBtn">कार्यक्रम जोडा</button>
-  <p id="status"></p>
-</div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD7dNWujSZFUSat3zKH0lXf8hNZKCv6-XU",
@@ -38,43 +28,123 @@ const firebaseConfig = {
   projectId: "schedule-balasaheb",
   storageBucket: "schedule-balasaheb.appspot.com",
   messagingSenderId: "614219892733",
-  appId: "1:614219892733:web:15f60c89267014cab37b94",
-  measurementId: "G-0R21W5VRQ7"
+  appId: "1:614219892733:web:15f60c89267014cab37b94"
 };
-
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-const title = document.getElementById('title');
-const date = document.getElementById('date');
-const place = document.getElementById('place');
-const map_url = document.getElementById('map_url');
-const description = document.getElementById('description');
+// DOM
+const loginDiv = document.getElementById('loginDiv');
+const adminDiv = document.getElementById('adminDiv');
+const emailInput = document.getElementById('email');
+const passInput = document.getElementById('password');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
 const addBtn = document.getElementById('addBtn');
-const status = document.getElementById('status');
+const titleInput = document.getElementById('title');
+const dateInput = document.getElementById('date');
+const placeInput = document.getElementById('place');
+const mapInput = document.getElementById('map_url');
+const descInput = document.getElementById('description');
+const eventListDiv = document.getElementById('eventList');
 
-addBtn.addEventListener('click', async ()=>{
-  const data = {
-    title: title.value.trim(),
-    date: date.value,
-    place: place.value.trim(),
-    map_url: map_url.value.trim(),
-    description: description.value.trim()
-  };
-  if(!data.title || !data.date || !data.place || !data.description){
-    status.textContent = "कृपया सर्व आवश्यक माहिती भरा.";
-    return;
-  }
-  status.textContent = "लोड होत आहे...";
-  try {
-    await addDoc(collection(db, "events"), data);
-    status.textContent = "कार्यक्रम यशस्वीरित्या जोडला.";
-    title.value=""; date.value=""; place.value=""; map_url.value=""; description.value="";
-  } catch(err){
-    console.error(err);
-    status.textContent = "चुक झाली, कृपया पुन्हा प्रयत्न करा.";
+let editingId = null;
+
+// Login
+loginBtn.addEventListener('click', async ()=>{
+  try{
+    await signInWithEmailAndPassword(auth,emailInput.value,passInput.value);
+  }catch(e){ alert(e.message); }
+});
+
+// Logout
+logoutBtn.addEventListener('click', ()=>signOut(auth));
+
+// Auth state
+onAuthStateChanged(auth,user=>{
+  if(user){
+    loginDiv.classList.add('hidden');
+    adminDiv.classList.remove('hidden');
+    loadAdminEvents();
+  } else {
+    loginDiv.classList.remove('hidden');
+    adminDiv.classList.add('hidden');
   }
 });
+
+// Add/Edit event
+addBtn.addEventListener('click', async ()=>{
+  const data = {
+    title: titleInput.value,
+    date: dateInput.value,
+    place: placeInput.value,
+    map_url: mapInput.value,
+    description: descInput.value
+  };
+  try {
+    if(editingId){
+      await updateDoc(doc(db,'events',editingId), data);
+      editingId=null;
+      addBtn.textContent="Add Event";
+    } else {
+      await addDoc(collection(db,'events'), data);
+    }
+    titleInput.value=""; dateInput.value=""; placeInput.value=""; mapInput.value=""; descInput.value="";
+    loadAdminEvents();
+  }catch(e){ alert(e.message); }
+});
+
+// Load events in admin panel
+async function loadAdminEvents(){
+  eventListDiv.innerHTML="लोड होत आहे...";
+  try{
+    const snapshot = await getDocs(collection(db,'events'));
+    const events = snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    eventListDiv.innerHTML="";
+    events.forEach(ev=>{
+      const div = document.createElement('div');
+      div.className='event-item';
+      div.innerHTML=`<strong>${ev.title}</strong> (${ev.date}) 
+        <button onclick='editEvent("${ev.id}","${ev.title}","${ev.date}","${ev.place}","${ev.map_url}","${ev.description}")'>Edit</button>`;
+      eventListDiv.appendChild(div);
+    });
+  }catch(e){ eventListDiv.innerHTML="लोड करता आले नाही."; console.error(e); }
+}
+
+// Edit function
+window.editEvent = (id,title,date,place,map,desc)=>{
+  editingId=id;
+  titleInput.value=title;
+  dateInput.value=date;
+  placeInput.value=place;
+  mapInput.value=map;
+  descInput.value=desc;
+  addBtn.textContent="Update Event";
+};
 </script>
+</head>
+<body>
+<header>Admin - दौरा कार्यक्रम</header>
+
+<div class="container" id="loginDiv">
+<h2>Login</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+<button id="loginBtn">Login</button>
+</div>
+
+<div class="container hidden" id="adminDiv">
+<h2>Manage Events</h2>
+<button id="logoutBtn">Logout</button>
+<input type="text" id="title" placeholder="Title">
+<input type="date" id="date">
+<input type="text" id="place" placeholder="Place">
+<input type="text" id="map_url" placeholder="Map URL (optional)">
+<textarea id="description" placeholder="Description"></textarea>
+<button id="addBtn">Add Event</button>
+
+<div class="event-list" id="eventList"></div>
+</div>
 </body>
 </html>
