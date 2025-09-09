@@ -38,58 +38,39 @@ button:hover{background:#bf360c;}
 
 <div class="event-list" id="event-list"></div>
 </div>
-
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
 const identity = netlifyIdentity;
-identity.on('init', user=>{
+
+// Initialize widget
+identity.init();
+
+// Avoid reload loops — show UI only after proper check
+identity.on('init', user => {
   if(user){
-    document.getElementById('login-section').style.display='none';
-    document.getElementById('admin-section').style.display='block';
-    loadEvents();
+    showAdminPanel();
+  } else {
+    showLogin();
   }
 });
-identity.on('login', user=>location.reload());
-identity.on('logout', ()=>location.reload());
 
-document.getElementById('login-btn').addEventListener('click', ()=>identity.open());
+// Optional: handle login/logout without auto reload
+identity.on('login', user => showAdminPanel());
+identity.on('logout', () => showLogin());
 
-const form = document.getElementById('event-form');
-form.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(form));
-  const res = await fetch('/.netlify/functions/save-events',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(data)
-  });
-  if(res.ok){ alert('कार्यक्रम जतन झाला!'); loadEvents(); form.reset(); }
-  else alert('त्रुटी');
-});
-
-async function loadEvents(){
-  const res = await fetch('/events.json');
-  const events = await res.json();
-  const list = document.getElementById('event-list');
-  list.innerHTML='';
-  events.forEach((e,i)=>{
-    const div = document.createElement('div');
-    div.className='event-item';
-    div.innerHTML=`<span>${e.title} - ${e.date}</span>
-      <button onclick="deleteEvent(${i})">डिलीट</button>`;
-    list.appendChild(div);
-  });
+// Helper functions
+function showAdminPanel(){
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('admin-section').style.display = 'block';
+  loadEvents();  // load events from JSON
 }
 
-async function deleteEvent(index){
-  const res = await fetch('/.netlify/functions/save-events',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({deleteIndex:index})
-  });
-  if(res.ok){ alert('कार्यक्रम हटवला!'); loadEvents(); }
-  else alert('त्रुटी');
+function showLogin(){
+  document.getElementById('login-section').style.display = 'block';
+  document.getElementById('admin-section').style.display = 'none';
 }
 </script>
+
 
 </body>
 </html>
