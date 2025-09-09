@@ -1,83 +1,22 @@
-<!-- admin.html -->
-<header>दौरा कार्यक्रम व्यवस्थापक</header>
-<div class="container">
-<h2>कार्यक्रम जोडा / संपादित करा</h2>
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - दौरा कार्यक्रम</title>
+</head>
+<body>
+<h2 style="text-align:center;margin-top:20px;">दौरा कार्यक्रम व्यवस्थापक</h2>
 
-<form id="event-form" class="filter-box">
-  <input type="text" name="title" placeholder="शीर्षक" required>
-  <input type="date" name="date" required>
-  <input type="text" name="place" placeholder="ठिकाण" required>
-  <input type="url" name="map_url" placeholder="Google नकाशा लिंक (optional)">
-  <input type="text" name="description" placeholder="विवरण" required>
-  <button type="submit">जोडा / अपडेट करा</button>
-</form>
-
-<div id="event-list"></div>
-</div>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
 
 <script>
-const form = document.getElementById('event-form');
-const list = document.getElementById('event-list');
-let events = [];
-
-async function loadEvents(){
-  const res = await fetch('/.netlify/functions/save-events');
-  events = await res.json();
-  renderList();
-}
-
-function renderList(){
-  list.innerHTML='';
-  events.forEach((event,index)=>{
-    const div = document.createElement('div');
-    div.className='event';
-    div.innerHTML=`
-      <h3>${event.title}</h3>
-      <p><strong>दिनांक:</strong> ${event.date}</p>
-      <p><strong>ठिकाण:</strong> ${event.place}</p>
-      <p><strong>विवरण:</strong> ${event.description}</p>
-      ${event.map_url?`<p><a href="${event.map_url}" target="_blank">Google नकाशा</a></p>`:''}
-      <button onclick="editEvent(${index})">संपादित करा</button>
-      <button onclick="deleteEvent(${index})">काढा</button>
-    `;
-    list.appendChild(div);
+  // Initialize Netlify Identity
+  netlifyIdentity.init();
+  netlifyIdentity.on("login", user => {
+    window.location.href = "/admin/"; // reload CMS after login
   });
-}
-
-form.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(form).entries());
-  if(form.dataset.editIndex!==undefined){
-    await fetch('/.netlify/functions/save-events',{
-      method:'PUT',
-      body: JSON.stringify({index: form.dataset.editIndex, event:data})
-    });
-    delete form.dataset.editIndex;
-  } else {
-    await fetch('/.netlify/functions/save-events',{
-      method:'POST',
-      body: JSON.stringify(data)
-    });
-  }
-  form.reset();
-  loadEvents();
-});
-
-function editEvent(index){
-  const event=events[index];
-  Object.keys(event).forEach(k=>form.elements[k].value=event[k]);
-  form.dataset.editIndex=index;
-}
-
-async function deleteEvent(index){
-  if(confirm('तुम्हाला नक्की हा कार्यक्रम काढायचा आहे का?')){
-    await fetch('/.netlify/functions/save-events',{
-      method:'DELETE',
-      body: JSON.stringify({index})
-    });
-    loadEvents();
-  }
-}
-
-loadEvents();
 </script>
+</body>
+</html>
