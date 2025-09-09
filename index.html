@@ -2,23 +2,278 @@
 <html lang="mr">
 <head>
   <meta charset="UTF-8">
-  <title>कार्यक्रम वेळापत्रक</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>दौरा कार्यक्रम - आ. विश्वजीत कदम</title>
+
+  <style>
+    /* === preserved UI (your original) === */
+    body {
+      margin: 0;
+      font-family: "Noto Sans Devanagari", sans-serif;
+      background: #f7f7f7;
+    }
+
+    header {
+      background: #e65100;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      position: relative;
+    }
+
+    /* small reload button inside header */
+    .reload {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: none;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 15px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    .filter-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .filter-box input, .filter-box button {
+      width: 95%;
+      max-width: 500px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .filter-box input:focus {
+      border-color: #e65100;
+      box-shadow: 0 0 5px rgba(230,81,0,0.5);
+    }
+
+    .filter-box button {
+      background: #e65100;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .filter-box button:hover {
+      background: #bf360c;
+    }
+
+    .event {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      transform: translateY(30px);
+      opacity: 0;
+      animation: slideUp 0.8s ease forwards;
+    }
+
+    .event h3 {
+      margin: 0;
+      color: #e65100;
+      font-size: 18px;
+    }
+
+    .event p {
+      margin: 5px 0;
+      color: #555;
+      font-size: 15px;
+    }
+
+    .map-link {
+      display:inline-block;
+      margin-top:8px;
+      padding:6px 10px;
+      border-radius:6px;
+      background:#e65100;
+      color:white;
+      text-decoration:none;
+      font-weight:600;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .event h3 { font-size: 16px; }
+      .event p { font-size: 14px; }
+    }
+  </style>
 </head>
 <body>
+
   <header>
-    <h1>कार्यक्रम वेळापत्रक</h1>
-    <button class="reload-btn" onclick="location.reload()">🔄</button>
+    आ. विश्वजीत कदम
+    <button class="reload" onclick="window.location.reload()">🔄</button>
   </header>
 
-  <main id="events-container">
-    <p>कार्यक्रम लोड होत आहेत...</p>
-  </main>
+  <div class="container">
+    <h2>दौरा कार्यक्रम</h2>
+
+    <!-- Search + Date Filter -->
+    <div class="filter-box">
+      <input type="text" id="searchInput" placeholder="कार्यक्रम शोधा (दिनांक, ठिकाण, विवरण)">
+      <input type="date" id="dateFilter">
+      <button id="clearBtn">फिल्टर काढा</button>
+    </div>
+
+    <!-- Events will be injected here -->
+    <div id="eventsContainer"></div>
+  </div>
 
   <footer>
-    <p>© 2025 आपले नाव | सर्व हक्क राखीव</p>
+    © २०२५ आ. विश्वजीत कदम | सर्व हक्क राखीव
   </footer>
 
-  <script src="index.js"></script>
+<script>
+/*
+  This script expects Netlify CMS to save events as JSON files in /events/*.json
+  (see config.yml below). It:
+   - lists /events directory,
+   - loads each .json,
+   - sorts by date and renders using your original UI.
+  Works with a public repo (no auth). If your repo is private, you must provide an authenticated path.
+*/
+
+const eventsContainer = document.getElementById('eventsContainer');
+const searchInput = document.getElementById('searchInput');
+const dateFilter = document.getElementById('dateFilter');
+const clearBtn = document.getElementById('clearBtn');
+
+let allEvents = [];
+
+async function loadEvents() {
+  eventsContainer.innerHTML = '<p>लोड करत आहे...</p>';
+
+  try {
+    // 1) fetch the directory listing for /events/
+    const res = await fetch('/events/');
+    if (!res.ok) throw new Error('Cannot read /events/ directory on this site');
+
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    // 2) find links that end with .json
+    const links = Array.from(doc.querySelectorAll('a'))
+      .map(a => a.getAttribute('href'))
+      .filter(h => h && h.endsWith('.json'));
+
+    // 3) fetch each json
+    const loaded = await Promise.all(links.map(name => fetch('/events/' + name).then(r => r.json()).catch(e => { console.error('load', name, e); return null; })));
+    const events = loaded.filter(Boolean);
+
+    // 4) normalize fields (title,date,place,map_url,description)
+    allEvents = events.map(ev => ({
+      title: ev.title || ev.name || ev.title_text || 'कार्यक्रम',
+      date: ev.date || ev.date_local || ev.date_iso || '',
+      place: ev.place || ev.location || '',
+      map_url: ev.map_url || ev.map || '',
+      description: ev.description || ev.body || ev.text || ''
+    }));
+
+    // 5) sort by date ascending
+    allEvents.sort((a,b) => {
+      if(!a.date) return 1;
+      if(!b.date) return -1;
+      return new Date(a.date) - new Date(b.date);
+    });
+
+    renderEvents(allEvents);
+  } catch (err) {
+    console.error(err);
+    eventsContainer.innerHTML = '<p>कार्यक्रम लोड करता आले नाहीत.</p>';
+  }
+}
+
+function renderEvents(list) {
+  eventsContainer.innerHTML = '';
+  if (!list || list.length === 0) {
+    eventsContainer.innerHTML = '<p>सध्या कोणतेही कार्यक्रम उपलब्ध नाहीत.</p>';
+    return;
+  }
+
+  list.forEach((ev, i) => {
+    const div = document.createElement('div');
+    div.className = 'event';
+    div.style.animationDelay = `${0.2 + i*0.1}s`;
+    const formattedDate = ev.date ? new Date(ev.date).toLocaleDateString('mr-IN', { day:'numeric', month:'long', year:'numeric' }) : '-';
+    div.innerHTML = `
+      <h3>${escapeHtml(ev.title)}</h3>
+      <p><strong>दिनांक:</strong> ${formattedDate}</p>
+      <p><strong>ठिकाण:</strong> ${escapeHtml(ev.place)}</p>
+      ${ev.map_url ? `<a class="map-link" href="${escapeAttr(ev.map_url)}" target="_blank" rel="noopener">नकाशावर पहा</a>` : ''}
+      <p><strong>विवरण:</strong> ${escapeHtml(ev.description)}</p>
+    `;
+    eventsContainer.appendChild(div);
+  });
+}
+
+function filterEvents() {
+  const q = searchInput.value.trim().toLowerCase();
+  const selDate = dateFilter.value; // yyyy-mm-dd
+  const filtered = allEvents.filter(ev => {
+    const text = `${ev.title} ${ev.date} ${ev.place} ${ev.description}`.toLowerCase();
+    const matchesSearch = !q || text.includes(q);
+    const matchesDate = !selDate || (ev.date && ev.date.startsWith(selDate));
+    return matchesSearch && matchesDate;
+  });
+  renderEvents(filtered);
+}
+
+searchInput.addEventListener('input', filterEvents);
+dateFilter.addEventListener('change', filterEvents);
+clearBtn.addEventListener('click', () => { searchInput.value=''; dateFilter.value=''; renderEvents(allEvents); });
+
+// small helpers to avoid XSS
+function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+function escapeAttr(s){ return escapeHtml(s).replace(/\n/g,''); }
+
+// initial load
+loadEvents();
+</script>
 </body>
 </html>
