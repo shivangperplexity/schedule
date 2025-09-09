@@ -135,7 +135,7 @@
 
   <header>
     आ. विश्वजीत कदम
-    <button class="reload" onclick="loadEvents()">🔄</button>
+    <button class="reload" onclick="window.location.reload()">🔄</button>
   </header>
 
   <div class="container">
@@ -161,54 +161,40 @@ const dateFilter = document.getElementById('dateFilter');
 const clearBtn = document.getElementById('clearBtn');
 let allEvents = [];
 
-// Your repo info
-const USER = "shivangperplexity";
-const REPO = "schedule";
-const BRANCH = "main";
-const EVENTS_FOLDER = "events";
-
 async function loadEvents() {
-  container.innerHTML = "लोड होत आहे...";
   try {
-    // 1. List all event files
-    const fileList = [
-      // Manually add your .md filenames here if known
-      // "2025-09-12-कार्यक्रम-१.md",
-      // "2025-09-15-कार्यक्रम-२.md",
-      // Or fetch dynamically from GitHub API if needed
-    ];
+    const res = await fetch("https://api.github.com/repos/shivangperplexity/schedule/contents/events");
+    if (!res.ok) throw new Error("Failed to fetch events");
 
-    // If fileList is empty, fetch filenames from GitHub API
-    if (fileList.length === 0) {
-      const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${EVENTS_FOLDER}`);
-      const files = await res.json();
-      fileList.push(...files.filter(f => f.name.endsWith(".md")).map(f => f.name));
-    }
-
+    const files = await res.json();
     const events = [];
-    for (const fileName of fileList) {
-      const rawUrl = `https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/${EVENTS_FOLDER}/${fileName}`;
-      const mdRes = await fetch(rawUrl);
-      const text = await mdRes.text();
 
-      const match = /^---([\s\S]*?)---([\s\S]*)$/m.exec(text);
-      if (!match) continue;
-      const frontmatter = match[1];
-      const body = match[2].trim();
+    for (const file of files) {
+      if (file.name.endsWith(".md")) {
+        // Add cache-busting query
+        const mdRes = await fetch(file.download_url + `?t=${Date.now()}`);
+        const text = await mdRes.text();
 
-      const data = {};
-      frontmatter.split("\n").forEach(line => {
-        const [key, ...rest] = line.split(":");
-        if (key) data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
-      });
+        // Parse frontmatter
+        const match = /^---([\s\S]*?)---([\s\S]*)$/m.exec(text);
+        if (!match) continue;
+        const frontmatter = match[1];
+        const body = match[2].trim();
 
-      events.push({
-        title: data.title || "कार्यक्रम",
-        date: data.date || "",
-        place: data.place || "",
-        map_url: data.map_url || "",
-        description: body
-      });
+        const data = {};
+        frontmatter.split("\n").forEach(line => {
+          const [key, ...rest] = line.split(":");
+          if (key) data[key.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
+        });
+
+        events.push({
+          title: data.title || "कार्यक्रम",
+          date: data.date || "",
+          place: data.place || "",
+          map_url: data.map_url || "",
+          description: body
+        });
+      }
     }
 
     events.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -261,6 +247,5 @@ clearBtn.addEventListener("click", ()=>{ searchInput.value=""; dateFilter.value=
 
 loadEvents();
 </script>
-
 </body>
 </html>
