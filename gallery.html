@@ -10,96 +10,52 @@ header { background:#e65100; color:white; padding:15px; text-align:center; font-
 .container { max-width:900px; margin:auto; padding:15px; }
 h2 { text-align:center; color:#e65100; margin-bottom:20px; }
 
-/* Date Card Grid */
+/* Main Gallery Grid */
 #date-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
     margin-top: 20px;
 }
-.date-card {
+.date-header {
+    grid-column: 1 / -1; /* Make the date header span all columns */
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #333;
+    margin: 20px 0 10px;
+    padding-left: 10px;
+}
+.gallery-item {
     background:white;
-    border-radius:12px;
-    box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    border-radius:8px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
-.date-card:hover {
-    transform: translateY(-5px);
-    box-shadow:0 8px 16px rgba(0,0,0,0.2);
+.gallery-item:hover {
+    transform: scale(1.03);
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
-.date-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-.date-card-content {
-    padding: 15px;
-    text-align: center;
-}
-.date-card-content h3 {
-    margin: 0 0 5px;
-    color:#e65100;
-    font-size:1.2em;
-}
-.date-card-content p {
-    margin: 0;
-    color:#666;
-    font-size:0.9em;
-}
-
-/* Modal for viewing all images of a date */
-.date-gallery-modal {
-    display: none;
-    position: fixed;
-    z-index: 1001;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.9);
-}
-.date-gallery-modal-content {
-    margin: 50px auto;
-    width: 90%;
-    max-width: 1000px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-}
-#date-gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-}
-.date-gallery-grid img {
+.gallery-item img {
     width: 100%;
     height: 150px;
     object-fit: cover;
-    cursor: pointer;
-    border-radius: 8px;
 }
-
-/* Close button for modals */
-.close {
-    position: absolute;
-    top: 15px;
-    right: 35px;
-    color: #f1f1f1;
-    font-size: 40px;
-    font-weight: bold;
-    transition: 0.3s;
+.gallery-item h3 {
+    text-align: center;
+    font-size: 1em;
+    font-weight: 500;
+    margin: 8px 0;
+    color: #333;
 }
-.close:hover, .close:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
-}
+.loading { text-align: center; color: #555; }
 
 /* The full-size image modal (re-used) */
-#full-image-modal {
+.modal {
     display: none;
     position: fixed;
     z-index: 1002;
@@ -111,7 +67,7 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     overflow: auto;
     background-color: rgba(0,0,0,0.9);
 }
-#full-image-modal-content {
+.modal-content {
     margin: auto;
     display: block;
     width: 80%;
@@ -127,8 +83,26 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     padding: 10px 0;
     height: 150px;
 }
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.close:hover, .close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
 
-.loading { text-align: center; color: #555; }
+@media only screen and (max-width: 768px) {
+    .modal-content {
+        width: 100%;
+    }
+}
 </style>
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -138,79 +112,51 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const dateCardGrid = document.getElementById('date-card-grid');
-const dateGalleryModal = document.getElementById("date-gallery-modal");
-const dateGalleryGrid = document.getElementById('date-gallery-grid');
+const galleryGrid = document.getElementById('date-card-grid');
 const fullImageModal = document.getElementById("full-image-modal");
 const fullImageModalImg = document.getElementById("full-image-modal-content");
 const fullImageCaption = document.getElementById("full-image-caption");
-let allImages = [];
 
 async function loadGallery() {
-    dateCardGrid.innerHTML = '<p class="loading">गॅलरी लोड होत आहे...</p>';
+    galleryGrid.innerHTML = '<p class="loading">गॅलरी लोड होत आहे...</p>';
     try {
         const { data: images, error } = await supabase
             .from('gallery_events')
             .select('url, title, timestamp')
             .order('timestamp', { ascending: false });
         if (error) throw error;
-        allImages = images;
         
         if (images.length === 0) {
-            dateCardGrid.innerHTML = '<p class="loading">सध्या कोणतेही फोटो उपलब्ध नाहीत.</p>';
+            galleryGrid.innerHTML = '<p class="loading">सध्या कोणतेही फोटो उपलब्ध नाहीत.</p>';
             return;
         }
 
-        const groupedImages = allImages.reduce((acc, image) => {
-            const date = new Date(image.timestamp).toLocaleDateString('mr-IN', { dateStyle: 'long' });
-            if (!acc[date]) {
-                acc[date] = [];
-            }
-            acc[date].push(image);
-            return acc;
-        }, {});
+        galleryGrid.innerHTML = "";
+        let currentDate = null;
 
-        renderDateCards(groupedImages);
+        images.forEach(image => {
+            const imageDate = new Date(image.timestamp).toLocaleDateString('mr-IN', { dateStyle: 'long' });
+            
+            if (imageDate !== currentDate) {
+                const header = document.createElement('h3');
+                header.className = 'date-header';
+                header.textContent = imageDate;
+                galleryGrid.appendChild(header);
+                currentDate = imageDate;
+            }
+
+            const div = document.createElement("div");
+            div.className = "gallery-item";
+            div.innerHTML = `
+                <img src="${image.url}" alt="${image.title}" onclick="showFullImageModal('${image.url}', '${image.title}')">
+                <h3>${image.title || 'No Title'}</h3>
+            `;
+            galleryGrid.appendChild(div);
+        });
     } catch(e) {
-        dateCardGrid.innerHTML = '<p class="loading">गॅलरी लोड करता आली नाही.</p>';
+        galleryGrid.innerHTML = '<p class="loading">गॅलरी लोड करता आली नाही.</p>';
         console.error(e);
     }
-}
-
-function renderDateCards(groupedImages) {
-    dateCardGrid.innerHTML = "";
-    Object.keys(groupedImages).forEach(date => {
-        const firstImage = groupedImages[date][0];
-        const card = document.createElement("div");
-        card.className = "date-card";
-        card.onclick = () => openDateGallery(date);
-        card.innerHTML = `
-            <img src="${firstImage.url}" alt="${firstImage.title}">
-            <div class="date-card-content">
-                <h3>${date}</h3>
-                <p>${groupedImages[date].length} फोटो</p>
-            </div>
-        `;
-        dateCardGrid.appendChild(card);
-    });
-}
-
-function openDateGallery(date) {
-    const imagesOnDate = allImages.filter(image => {
-        const imageDate = new Date(image.timestamp).toLocaleDateString('mr-IN', { dateStyle: 'long' });
-        return imageDate === date;
-    });
-
-    dateGalleryGrid.innerHTML = "";
-    imagesOnDate.forEach(image => {
-        const imgElement = document.createElement("img");
-        imgElement.src = image.url;
-        imgElement.alt = image.title;
-        imgElement.onclick = () => showFullImageModal(image.url, image.title);
-        dateGalleryGrid.appendChild(imgElement);
-    });
-    
-    dateGalleryModal.style.display = "block";
 }
 
 function showFullImageModal(imageUrl, imageTitle) {
@@ -219,19 +165,13 @@ function showFullImageModal(imageUrl, imageTitle) {
     fullImageCaption.innerHTML = imageTitle || "No Title";
 }
 
-// Close buttons for modals
 document.querySelectorAll('.close').forEach(button => {
     button.onclick = function() {
         fullImageModal.style.display = "none";
-        dateGalleryModal.style.display = "none";
     };
 });
 
-// Close modal when clicking outside
 window.onclick = function(event) {
-    if (event.target === dateGalleryModal) {
-        dateGalleryModal.style.display = "none";
-    }
     if (event.target === fullImageModal) {
         fullImageModal.style.display = "none";
     }
@@ -245,14 +185,6 @@ loadGallery();
 <div class="container">
   <h2>गॅलरी</h2>
   <div id="date-card-grid"></div>
-</div>
-
-<div id="date-gallery-modal" class="date-gallery-modal">
-    <div class="date-gallery-modal-content">
-        <span class="close" onclick="dateGalleryModal.style.display='none'">&times;</span>
-        <h3>या दिवसाचे फोटो</h3>
-        <div id="date-gallery-grid"></div>
-    </div>
 </div>
 
 <div id="full-image-modal" class="modal">
