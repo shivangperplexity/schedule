@@ -184,7 +184,13 @@ uploadBtn.addEventListener('click', async () => {
     
     const { data: { publicUrl } } = supabase.storage.from('gallery-images').getPublicUrl(fileName);
     
-    const { error: insertError } = await supabase.from('gallery').insert([{ url: publicUrl, timestamp: Date.now(), title: title }]);
+    // Corrected: Pass the user ID from Firebase to Supabase
+    const { error: insertError } = await supabase.from('gallery').insert([{ 
+      url: publicUrl, 
+      timestamp: Date.now(), 
+      title: title, 
+      user_id: user.uid
+    }]);
     if (insertError) throw insertError;
 
     alert("Image uploaded successfully!");
