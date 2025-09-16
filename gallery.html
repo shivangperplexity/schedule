@@ -75,13 +75,6 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     height: 150px;
     object-fit: cover;
 }
-.gallery-item p {
-    text-align: center;
-    font-weight: 500;
-    margin: 8px 0;
-    color: #333;
-    font-size: 1em;
-}
 
 /* --- Modal Styles --- */
 #full-image-modal {
@@ -198,8 +191,7 @@ function renderGallery(images) {
         const div = document.createElement("div");
         div.className = "gallery-item";
         div.innerHTML = `
-            <img src="${image.url}" alt="${image.title}" onclick="showFullImageModal('${image.url}', '${image.title}')">
-            <p>${image.title || 'No Title'}</p>
+            <img src="${image.url}" alt="">
         `;
         galleryGrid.appendChild(div);
     });
@@ -224,7 +216,7 @@ function showRandomSlide() {
 function showFullImageModal(imageUrl, imageTitle) {
     fullImageModal.style.display = "block";
     fullImageModalImg.src = imageUrl;
-    fullImageCaption.innerHTML = imageTitle || "No Title";
+    fullImageCaption.innerHTML = imageTitle || "";
 }
 
 document.querySelectorAll('.close').forEach(button => {
