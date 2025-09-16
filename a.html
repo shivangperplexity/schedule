@@ -71,7 +71,11 @@ let editingEventId = null;
 let editingGalleryId = null;
 
 // Firebase Auth
-loginBtn.addEventListener('click', async ()=>{\n  try{\n    await signInWithEmailAndPassword(auth,emailInput.value,passInput.value);\n  }catch(e){ alert(e.message); }\n});
+loginBtn.addEventListener('click', async ()=>{
+  try{
+    await signInWithEmailAndPassword(auth,emailInput.value,passInput.value);
+  }catch(e){ alert(e.message); }
+});
 
 logoutBtn.addEventListener('click', ()=>signOut(auth));
 
@@ -89,17 +93,36 @@ onAuthStateChanged(auth,user=>{
 });
 
 // Add/Edit event with Firebase
-addBtn.addEventListener('click', async ()=>{\n  const data = {\n    title: titleInput.value,\n    date: dateInput.value,\n    place: placeInput.value,\n    map_url: mapInput.value,\n    description: descInput.value\n  };\n  try {
-    if(editingEventId){\n      await updateDoc(doc(db,'events',editingEventId), data);\n      editingEventId=null;\n      addBtn.textContent="Add Event";\n    } else {
-      await addDoc(collection(db,'events'), data);\n    }\n    titleInput.value=""; dateInput.value=""; placeInput.value=""; mapInput.value=""; descInput.value="";
+addBtn.addEventListener('click', async ()=>{
+  const data = {
+    title: titleInput.value,
+    date: dateInput.value,
+    place: placeInput.value,
+    map_url: mapInput.value,
+    description: descInput.value
+  };
+  try {
+    if(editingEventId){
+      await updateDoc(doc(db,'events',editingEventId), data);
+      editingEventId=null;
+      addBtn.textContent="Add Event";
+    } else {
+      await addDoc(collection(db,'events'), data);
+    }
+    titleInput.value=""; dateInput.value=""; placeInput.value=""; mapInput.value=""; descInput.value="";
     loadAdminEvents();
-  }catch(e){ alert(e.message); }\n});
+  }catch(e){ alert(e.message); }
+});
 
 // Load events in admin panel with Firebase
-async function loadAdminEvents(){\n  eventListDiv.innerHTML="लोड होत आहे...";\n  try{\n    const snapshot = await getDocs(collection(db,'events'));
+async function loadAdminEvents(){
+  eventListDiv.innerHTML="लोड होत आहे...";
+  try{
+    const snapshot = await getDocs(collection(db,'events'));
     const events = snapshot.docs.map(d=>({id:d.id,...d.data()}));
     eventListDiv.innerHTML="";
-    events.forEach(ev=>{\n      const div = document.createElement('div');
+    events.forEach(ev=>{
+      const div = document.createElement('div');
       div.className='event-item';
       div.innerHTML=`
         <div>
@@ -110,15 +133,35 @@ async function loadAdminEvents(){\n  eventListDiv.innerHTML="लोड होत
           <button onclick='deleteEvent("${ev.id}")'>Delete</button>
         </div>
       `;
-      eventListDiv.appendChild(div);\n    });
-  }catch(e){ eventListDiv.innerHTML="लोड करता आले नाही."; console.error(e); }\n}
+      eventListDiv.appendChild(div);
+    });
+  }catch(e){ eventListDiv.innerHTML="लोड करता आले नाही."; console.error(e); }
+}
 
 // Edit event function
-window.editEvent = (id,title,date,place,map,desc)=>{\n  editingEventId=id;\n  titleInput.value=title;\n  dateInput.value=date;\n  placeInput.value=place;\n  mapInput.value=map;\n  descInput.value=desc;\n  addBtn.textContent="Update Event";\n};\n\n// Delete event with Firebase
-window.deleteEvent = async (id) => {\n  if (confirm("Are you sure you want to delete this event?")) {\n    try {
+window.editEvent = (id,title,date,place,map,desc)=>{
+  editingEventId=id;
+  titleInput.value=title;
+  dateInput.value=date;
+  placeInput.value=place;
+  mapInput.value=map;
+  descInput.value=desc;
+  addBtn.textContent="Update Event";
+};
+
+// Delete event with Firebase
+window.deleteEvent = async (id) => {
+  if (confirm("Are you sure you want to delete this event?")) {
+    try {
       await deleteDoc(doc(db, 'events', id));
       loadAdminEvents();
-    } catch (e) {\n      alert("Error deleting event: " + e.message);\n    }\n  }\n};\n\n// --- GALLERY FUNCTIONS (Supabase) ---
+    } catch (e) {
+      alert("Error deleting event: " + e.message);
+    }
+  }
+};
+
+// --- GALLERY FUNCTIONS (Supabase) ---
 uploadBtn.addEventListener('click', async () => {
   const file = imageInput.files[0];
   const title = imageTitleInput.value;
