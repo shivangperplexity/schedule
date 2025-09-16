@@ -29,7 +29,7 @@ const galleryGrid = document.getElementById('galleryGrid');
 async function loadGallery() {
   galleryGrid.innerHTML = '<p class="loading">गॅलरी लोड होत आहे...</p>';
   try {
-    const { data: images, error } = await supabase.from('gallery').select('url, title').order('timestamp', { ascending: false });
+    const { data: images, error } = await supabase.from('gallery_events').select('url, title').order('timestamp', { ascending: false });
     if (error) throw error;
     
     galleryGrid.innerHTML = "";
