@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google" content="notranslate">
+  <title>डॉ. विश्वजीत कदम - प्रोफाइल</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Base Styles */
+    body {
+      margin: 0;
+      font-family: 'Noto Sans Devanagari', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #e6f0fa 0%, #f9f9f9 100%);
+      color: #2d2d2d;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(to right, #ff7e5f, #feb47b);
+      color: white;
+      padding: 1.2rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      animation: slideDown 0.8s ease-out;
+    }
+
+    .translate-btn {
+      background: #fff;
+      color: #ff7e5f;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .translate-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      background: #ff7e5f;
+      color: white;
+    }
+
+    /* Banner and Profile Picture Container */
+    .profile-section {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem; /* Reduced from 2.5rem */
+      height: 300px;
+    }
+
+    .banner-container {
+      position: absolute;
+      top: 0;
+      width: 100vw;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 240px; 
+      background-image: url('https://i.ibb.co/QvLCJzNx/banner.jpg');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-color: #f0f0f0;
+      background-position: center;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .profile-pic {
+      position: relative;
+      z-index: 2;
+      margin-top: 120px;
+      animation: scaleIn 1s ease-out;
+    }
+
+    .profile-pic img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 6px solid #ff7e5f;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .profile-pic img:hover {
+      transform: scale(1.15);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Cards Container */
+    .cards-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem; /* Reduced from 2.5rem */
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Glass Morphism Card */
+    .card {
+      width: 100%;
+      max-width: 700px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transform: translateY(60px) scale(0.95);
+      transition: all 0.6s ease;
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h2 {
+      color: #ff7e5f;
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+      font-weight: 700;
+      border-bottom: 3px solid #ffe0d2;
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .card h2 svg {
+      margin-right: 12px;
+      fill: #ff7e5f;
+      width: 30px;
+      height: 30px;
+    }
+
+    .card p, .card li {
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: #4a4a4a;
+      opacity: 0;
+      animation: fadeInText 0.8s ease forwards;
+      animation-delay: calc(0.2s * var(--i));
+    }
+
+    .card ul {
+      padding-left: 1.5rem;
+    }
+
+    .card li {
+      margin-bottom: 0.75rem;
+    }
+
+    .snapshot-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .snapshot-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 1rem;
+    }
+
+    .snapshot-table td:first-child {
+      font-weight: 600;
+      color: #333;
+      width: 40%;
+    }
+
+    .english {
+      display: none;
+    }
+
+    .info-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-card img {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-top: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      animation: scaleIn 1s ease-out;
+    }
+
+    .small-pic {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .small-pic img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ff7e5f;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      transition: transform 0.4s ease;
+      animation: scaleIn 1s ease-out;
+    }
+
+    .small-pic img:hover {
+      transform: scale(1.15);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+
+    .chart-error {
+      color: #ff7e5f;
+      font-size: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+      display: none;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 300px !important;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeInText {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(60px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .cards-container {
+        padding: 1.2rem;
+      }
+      .card {
+        max-width: 100%;
+        padding: 1.5rem;
+      }
+      .card h2 {
+        font-size: 1.5rem;
+      }
+      .chart-container {
+        height: 280px;
+      }
+      .profile-pic img {
+        width: 120px;
+        height: 120px;
+      }
+      canvas {
+        height: 250px !important;
+      }
+      .banner-container {
+          width: 100vw;
+          height: 180px;
+      }
+      .profile-pic {
+        margin-top: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="translate-btn" aria-label="Toggle language between Marathi and English" onclick="toggleLanguage()">Translate</button>
+  </header>
+
+  <div class="profile-section">
+    <div class="banner-container"></div>
+    <div class="profile-pic">
+      <img src="https://media.assettype.com/thebridgechronicle%2Fimport%2Fs3fs-public%2Fnews-story%2Fcover-images%2F216_56.jpg" alt="Dr. Vishwajeet Kadam" loading="lazy" onerror="this.src='https://placehold.co/180x180?text=Profile+Image'; console.warn('Failed to load profile image:', this.src);">
+    </div>
+  </div>
+
+  <div class="cards-container">
+    <div class="card">
+      <div class="marathi">
+        <h2>वैयक्तिक माहिती</h2>
+        <p style="--i: 1"><b>नाव:</b> डॉ. विश्वजीत कदम</p>
+        <p style="--i: 2"><b>जन्मतारीख:</b> १३ जानेवारी १९८०</p>
+        <p style="--i: 3"><b>जन्मस्थान व निवास:</b> पुणे, महाराष्ट्र</p>
+        <p style="--i: 4"><b>पालक:</b> स्व. पतंगराव कदम यांचे सुपुत्र</p>
+      </div>
+      <div class="english">
+        <h2>Personal Details</h2>
+        <p style="--i: 1"><b>Name:</b> Dr. Vishwajeet Kadam</p>
+        <p style="--i: 2"><b>DOB:</b> 13 January 1980</p>
+        <p style="--i: 3"><b>Birthplace & Residence:</b> Pune, Maharashtra</p>
+        <p style="--i: 4"><b>Parentage:</b> Son of Patangrao Kadam</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="marathi">
+        <h2>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6l11-6l-11-6zm0 10.6L3.45 8.9L12 4.4l8.55 4.5L12 13.6zm0 2.4L1 18l11 6l11-6l-11-6z"/></svg>
+          शिक्षण व व्यावसायिक पार्श्वभूमी
+        </h2>
+        <p style="--i: 1">बी.ई., एम.बी.ए. आणि व्यवस्थापनात पीएच.डी. केली आहे.</p>
+        <p style="--i: 2">हावर्ड विद्यापीठात Management & Leadership in Education शिकले.</p>
+        <div class="info-card">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Bharti_vidyapith_%282%29.JPG/1600px-Bharti_vidyapith_%282%29.JPG" alt="Bharati Vidyapeeth Campus" loading="lazy" onerror="this.src='https://placehold.co/300x150?text=Campus+Image'; console.warn('Failed to load campus image:', this.src);">
+        </div>
+      </div>
+      <div class="english">
+        <h2>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6l11-6l-11-6zm0 10.6L3.45 8.9L12 4.4l8.55 4.5L12 13.6zm0 2.4L1 18l11 6l11-6l-11-6z"/></svg>
+          Education & Career
+        </h2>
+        <p style="--i: 1">Holds a B.E., MBA, and a Ph.D. in Management.</p>
+        <p style="--i: 2">Studied Management & Leadership in Education at Howard University.</p>
+        <div class="info-card">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Bharti_vidyapith_%282%29.JPG/1600px-Bharti_vidyapith_%282%29.JPG" alt="Bharati Vidyapeeth Campus" loading="lazy" onerror="this.src='https://placehold.co/300x150?text=Campus+Image'; console.warn('Failed to load campus image:', this.src);">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="marathi">
+        <h2>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 9h-4V7h-3V4H5v16h14v-2h-3v-3h2.5V12H22V9zM7 18V6h6v3h2v1h-2v4h2v2h-2v1H7zm12-4V9h-3.5v5H19zM8 7h5v2H8V7zM8 12h5v2H8v-2zM8 16h5v2H8v-2z"/></svg>
+          राजकीय कारकीर्द
+        </h2>
+        <ul>
+          <li style="--i: 1">२०१८ पासून पलूस-कडेगावचे आमदार</li>
+          <li style="--i: 2">२०१८ पोटनिवडणूक: बिनविरोध विजयी</li>
+          <li style="--i: 3">२०१९: विक्रमी १.७ लाख मतांनी विजय</li>
+          <li style="--i: 4">२०२४: ~३०,०६४ मतांनी पुन्हा विजयी</li>
+        </ul>
+        <div class="chart-container">
+          <canvas id="electionChart" aria-label="Election Margin Pie Chart"></canvas>
+          <div class="chart-error">Chart could not be loaded. Please check your connection or browser settings.</div>
+        </div>
+        <div class="info-card">
+          <img src="https://www.hindustantimes.com/ht-img/img/2024/11/09/550x309/Congress-leader-and-MLA-Vishwajeet-Kadam-has-been-_1731174508116.jpg" alt="Political Rally in India" loading="lazy" onerror="this.src='https://placehold.co/300x200?text=Rally+Image'; console.warn('Failed to load rally image:', this.src);">
+        </div>
+      </div>
+      <div class="english">
+        <h2>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 9h-4V7h-3V4H5v16h14v-2h-3v-3h2.5V12H22V9zM7 18V6h6v3h2v1h-2v4h2v2h-2v1H7zm12-4V9h-3.5v5H19zM8 7h5v2H8V7zM8 12h5v2H8v-2zM8 16h5v2H8v-2z"/></svg>
+          Political Career
+        </h2>
+        <ul>
+          <li style="--i: 1">MLA, Palus-Kadegaon since 2018</li>
+          <li style="--i: 2">2018 Bye-election: Unopposed win</li>
+          <li style="--i: 3">2019: Won by ~1.7 lakh votes</li>
+          <li style="--i: 4">2024: Re-elected, margin ~30,064</li>
+        </ul>
+        <div class="chart-container">
+          <canvas id="electionChartEn" aria-label="Election Margin Pie Chart"></canvas>
+          <div class="chart-error">Chart could not be loaded. Please check your connection or browser settings.</div>
+        </div>
+        <div class="info-card">
+          <img src="https://www.hindustantimes.com/ht-img/img/2024/11/09/550x309/Congress-leader-and-MLA-Vishwajeet-Kadam-has-been-_1731174508116.jpg" alt="Political Rally in India" loading="lazy" onerror="this.src='https://placehold.co/300x200?text=Rally+Image'; console.warn('Failed to load rally image:', this.src);">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="marathi">
+        <h2>मंत्रीपदाचा कार्यकाळ</h2>
+        <p style="--i: 1">२०१९–२०२२ दरम्यान उद्धव ठाकरे सरकारमध्ये राज्यमंत्री.</p>
+        <p style="--i: 2">सहकार, कृषी, सामाजिक न्याय, अन्न व नागरी पुरवठा, ग्राहक संरक्षण, अल्पसंख्याक विकास, मराठी भाषा, वित्त, नियोजन, कौशल्य विकास, विपणन, सार्वजनिक आरोग्य अशा मंत्रालयांची जबाबदारी.</p>
+      </div>
+      <div class="english">
+        <h2>Ministerial Tenure</h2>
+        <p style="--i: 1">MoS (2019–2022) under Uddhav Thackeray govt.</p>
+        <p style="--i: 2">Handled Co-operation, Agriculture, Social Justice, Food & Civil Supplies, Consumer Affairs, Minority Development, Marathi Language, Finance, Planning, Skill Development, Marketing, Public Health.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="marathi">
+        <h2>विधायी कामगिरी</h2>
+        <p style="--i: 1"><b>उपस्थिती:</b> ८१.७%</p>
+        <p style="--i: 2"><b>प्रश्न विचारले:</b> १८९</p>
+        <div class="chart-container">
+          <canvas id="performanceChart" aria-label="Legislative Attendance Pie Chart"></canvas>
+          <div class="chart-error">Chart could not be loaded. Please check your connection or browser settings.</div>
+        </div>
+      </div>
+      <div class="english">
+        <h2>Legislative Performance</h2>
+        <p style="--i: 1"><b>Attendance:</b> 81.7%</p>
+        <p style="--i: 2"><b>Questions Raised:</b> 189</p>
+        <div class="chart-container">
+          <canvas id="performanceChartEn" aria-label="Legislative Attendance Pie Chart"></canvas>
+          <div class="chart-error">Chart could not be loaded. Please check your connection or browser settings.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="marathi">
+        <h2>संक्षिप्त माहिती</h2>
+        <table class="snapshot-table">
+          <tr>
+            <td>मतदारसंघ</td>
+            <td class="small-pic">
+              पलूस-कडेगाव
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/285-Palus-Kadegaon.svg/500px-285-Palus-Kadegaon.svg.png" alt="Palus-Kadegaon Map" loading="lazy" onerror="this.src='https://placehold.co/80x80?text=Map+Image'; console.warn('Failed to load map image:', this.src);">
+            </td>
+          </tr>
+          <tr><td>पक्ष</td><td>भारतीय राष्ट्रीय काँग्रेस</td></tr>
+          <tr><td>शिक्षण</td><td>बीई, एमबीए, पीएचडी, हावर्ड विद्यापीठ</td></tr>
+          <tr><td>प्रथम निवड</td><td>२०१८</td></tr>
+        </table>
+      </div>
+      <div class="english">
+        <h2>Quick Snapshot</h2>
+        <table class="snapshot-table">
+          <tr>
+            <td>Constituency</td>
+            <td class="small-pic">
+              Palus-Kadegaon
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/285-Palus-Kadegaon.svg/500px-285-Palus-Kadegaon.svg.png" alt="Palus-Kadegaon Map" loading="lazy" onerror="this.src='https://placehold.co/80x80?text=Map+Image'; console.warn('Failed to load map image:', this.src);">
+            </td>
+          </tr>
+          <tr><td>Party</td><td>Indian National Congress</td></tr>
+          <tr><td>Education</td><td>BE, MBA, PhD, Howard University</td></tr>
+          <tr><td>First Elected</td><td>2018</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="marathi">
+        <h2>सारांश</h2>
+        <p style="--i: 1">डॉ. कदम हे उच्चशिक्षित व सक्रिय नेते असून सातत्याने विजयी होत महाराष्ट्राच्या राजकीय व विकास प्रक्रियेत महत्त्वपूर्ण योगदान देत आहेत.</p>
+      </div>
+      <div class="english">
+        <h2>Summary</h2>
+        <p style="--i: 1">Dr. Kadam is a well-educated leader with strong political legacy and proven governance experience. With consistent re-elections and impactful ministerial service, he remains a key figure in Maharashtra politics.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let charts = {};
+
+    function initChart(chartId, data, labels, tooltips, chartLabels) {
+      const ctx = document.getElementById(chartId)?.getContext('2d');
+      if (!ctx) return;
+
+      if (charts[chartId]) {
+        charts[chartId].destroy();
+      }
+
+      charts[chartId] = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#ff7e5f', '#feb47b', '#ff9f69', '#ccc'],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            animateRotate: true,
+            animateScale: true,
+            duration: 1000,
+            easing: 'easeOutQuart'
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { padding: 20, usePointStyle: true }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return tooltips[context.dataIndex] + ': ' + context.parsed.toFixed(1) + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateCharts(lang) {
+      if (lang === 'marathi') {
+        initChart('performanceChart', [81.7, 18.3], null, ['उपस्थिती', 'अनुपस्थिती'], ['उपस्थिती', 'अनुपस्थिती']);
+        initChart('electionChart', [40, 40, 20], null, ['2018: बिनविरोध', '2019: ~1.7 लाख मतांनी विजय', '2024: ~30,064 मतांनी विजय'], ['बिनविरोध', '१.७ लाख मतांनी', '~३०,०६४ मतांनी']);
+      } else {
+        initChart('performanceChartEn', [81.7, 18.3], null, ['Attendance', 'Absence'], ['Attendance', 'Absence']);
+        initChart('electionChartEn', [40, 40, 20], null, ['2018: Unopposed', '2019: ~1.7L votes', '2024: ~30,064 votes'], ['Unopposed', '1.7 Lakh votes', '~30,064 votes']);
+      }
+    }
+    
+    // Language Toggle
+    function toggleLanguage() {
+      const marathiElements = document.querySelectorAll('.marathi');
+      const englishElements = document.querySelectorAll('.english');
+      const translateButton = document.querySelector('.translate-btn');
+      
+      const isMarathiActive = marathiElements[0].style.display !== 'none';
+
+      if (isMarathiActive) {
+        marathiElements.forEach(el => el.style.display = 'none');
+        englishElements.forEach(el => el.style.display = 'block');
+        translateButton.textContent = 'मराठीत भाषांतर करा';
+        updateCharts('english');
+      } else {
+        marathiElements.forEach(el => el.style.display = 'block');
+        englishElements.forEach(el => el.style.display = 'none');
+        translateButton.textContent = 'Translate';
+        updateCharts('marathi');
+      }
+    }
+    window.toggleLanguage = toggleLanguage;
+
+    // IntersectionObserver to initialize charts on visibility
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          const marathiContent = entry.target.querySelector('.marathi');
+          if (marathiContent && marathiContent.style.display !== 'none') {
+            updateCharts('marathi');
+          } else {
+            updateCharts('english');
+          }
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.card').forEach(card => observer.observe(card));
+
+    // Initial language setup
+    document.addEventListener('DOMContentLoaded', () => {
+        const marathiElements = document.querySelectorAll('.marathi');
+        const englishElements = document.querySelectorAll('.english');
+
+        marathiElements.forEach(el => el.style.display = 'block');
+        englishElements.forEach(el => el.style.display = 'none');
+        document.querySelector('.translate-btn').textContent = 'Translate';
+        updateCharts('marathi');
+    });
+  </script>
+</body>
+</html>
