@@ -5,25 +5,79 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>छायाचित्र दालन</title>
 <style>
+/* --- General Theme --- */
 body { font-family:"Noto Sans Devanagari",sans-serif; background:#f7f7f7; margin:0; padding:0; }
 header { background:#e65100; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
 .container { max-width:900px; margin:auto; padding:15px; }
 h2 { text-align:center; color:#e65100; margin-bottom:20px; }
+.loading { text-align: center; color: #555; }
 
-/* Main Gallery Grid */
-#date-card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 10px;
-    margin-top: 20px;
+/* --- Slideshow Styles --- */
+.slideshow-container {
+    max-width: 1000px;
+    position: relative;
+    margin: auto;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
 }
-.date-header {
-    grid-column: 1 / -1; /* Make the date header span all columns */
-    font-size: 1.5em;
-    font-weight: 700;
-    color: #333;
-    margin: 20px 0 10px;
-    padding-left: 10px;
+.mySlides {
+    display: none;
+}
+.mySlides img {
+    width: 100%;
+    height: 450px; /* Consistent height for slideshow */
+    object-fit: cover;
+    cursor: pointer;
+}
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    padding: 16px;
+    margin-top: -22px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    transition: 0.6s ease;
+    border-radius: 0 3px 3px 0;
+    user-select: none;
+    background-color: rgba(0,0,0,0.5);
+}
+.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+.prev:hover, .next:hover {
+    background-color: rgba(0,0,0,0.8);
+}
+.dot-container {
+    text-align: center;
+    padding: 10px;
+    background: #fff;
+}
+.dot {
+    cursor: pointer;
+    height: 15px;
+    width: 15px;
+    margin: 0 2px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.6s ease;
+}
+.active, .dot:hover {
+    background-color: #e65100;
+}
+
+/* --- Main Gallery Grid Styles --- */
+#all-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
 }
 .gallery-item {
     background:white;
@@ -32,9 +86,6 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
 .gallery-item:hover {
     transform: scale(1.03);
@@ -45,17 +96,16 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     height: 150px;
     object-fit: cover;
 }
-.gallery-item h3 {
+.gallery-item p {
     text-align: center;
-    font-size: 1em;
     font-weight: 500;
     margin: 8px 0;
     color: #333;
+    font-size: 1em;
 }
-.loading { text-align: center; color: #555; }
 
-/* The full-size image modal (re-used) */
-.modal {
+/* --- Modal Styles --- */
+#full-image-modal {
     display: none;
     position: fixed;
     z-index: 1002;
@@ -67,7 +117,7 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     overflow: auto;
     background-color: rgba(0,0,0,0.9);
 }
-.modal-content {
+#full-image-modal-content {
     margin: auto;
     display: block;
     width: 80%;
@@ -97,12 +147,6 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     text-decoration: none;
     cursor: pointer;
 }
-
-@media only screen and (max-width: 768px) {
-    .modal-content {
-        width: 100%;
-    }
-}
 </style>
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -112,52 +156,90 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const galleryGrid = document.getElementById('date-card-grid');
+const galleryGrid = document.getElementById('all-images-grid');
+const slideshowContainer = document.getElementById('slideshow-container');
 const fullImageModal = document.getElementById("full-image-modal");
 const fullImageModalImg = document.getElementById("full-image-modal-content");
 const fullImageCaption = document.getElementById("full-image-caption");
 
+let slideIndex = 1;
+let allImages = [];
+
 async function loadGallery() {
+    slideshowContainer.innerHTML = '<p class="loading">गॅलरी लोड होत आहे...</p>';
     galleryGrid.innerHTML = '<p class="loading">गॅलरी लोड होत आहे...</p>';
     try {
         const { data: images, error } = await supabase
             .from('gallery_events')
-            .select('url, title, timestamp')
+            .select('url, title')
             .order('timestamp', { ascending: false });
         if (error) throw error;
+        allImages = images;
         
         if (images.length === 0) {
+            slideshowContainer.innerHTML = '<p class="loading">सध्या कोणतेही फोटो उपलब्ध नाहीत.</p>';
             galleryGrid.innerHTML = '<p class="loading">सध्या कोणतेही फोटो उपलब्ध नाहीत.</p>';
             return;
         }
 
-        galleryGrid.innerHTML = "";
-        let currentDate = null;
+        renderSlideshow(images);
+        renderGallery(images);
 
-        images.forEach(image => {
-            const imageDate = new Date(image.timestamp).toLocaleDateString('mr-IN', { dateStyle: 'long' });
-            
-            if (imageDate !== currentDate) {
-                const header = document.createElement('h3');
-                header.className = 'date-header';
-                header.textContent = imageDate;
-                galleryGrid.appendChild(header);
-                currentDate = imageDate;
-            }
-
-            const div = document.createElement("div");
-            div.className = "gallery-item";
-            div.innerHTML = `
-                <img src="${image.url}" alt="${image.title}" onclick="showFullImageModal('${image.url}', '${image.title}')">
-                <h3>${image.title || 'No Title'}</h3>
-            `;
-            galleryGrid.appendChild(div);
-        });
     } catch(e) {
+        slideshowContainer.innerHTML = '<p class="loading">गॅलरी लोड करता आली नाही.</p>';
         galleryGrid.innerHTML = '<p class="loading">गॅलरी लोड करता आली नाही.</p>';
         console.error(e);
     }
 }
+
+function renderSlideshow(images) {
+    let slideshowHTML = "";
+    images.forEach((image, index) => {
+        slideshowHTML += `
+            <div class="mySlides fade">
+                <img src="${image.url}" onclick="showFullImageModal('${image.url}', '${image.title}')">
+            </div>
+        `;
+    });
+    slideshowHTML += `<a class="prev" onclick="plusSlides(-1)">&#10094;</a>`;
+    slideshowHTML += `<a class="next" onclick="plusSlides(1)">&#10095;</a>`;
+    slideshowContainer.innerHTML = slideshowHTML;
+
+    showSlides(slideIndex);
+}
+
+function renderGallery(images) {
+    galleryGrid.innerHTML = "";
+    images.forEach(image => {
+        const div = document.createElement("div");
+        div.className = "gallery-item";
+        div.innerHTML = `
+            <img src="${image.url}" alt="${image.title}" onclick="showFullImageModal('${image.url}', '${image.title}')">
+            <p>${image.title || 'No Title'}</p>
+        `;
+        galleryGrid.appendChild(div);
+    });
+}
+
+function showSlides(n) {
+    let i;
+    let slides = document.getElementsByClassName("mySlides");
+    if (n > slides.length) {slideIndex = 1}    
+    if (n < 1) {slideIndex = slides.length}
+    for (i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";  
+    }
+    slides[slideIndex-1].style.display = "block";  
+}
+
+function plusSlides(n) {
+    showSlides(slideIndex += n);
+}
+
+function currentSlide(n) {
+    showSlides(slideIndex = n);
+}
+
 
 function showFullImageModal(imageUrl, imageTitle) {
     fullImageModal.style.display = "block";
@@ -183,8 +265,11 @@ loadGallery();
 <body>
 <header>छायाचित्र दालन</header>
 <div class="container">
-  <h2>गॅलरी</h2>
-  <div id="date-card-grid"></div>
+  
+  <div class="slideshow-container" id="slideshow-container"></div>
+  
+  <h2 style="margin-top: 40px;">सर्व फोटो</h2>
+  <div id="all-images-grid"></div>
 </div>
 
 <div id="full-image-modal" class="modal">
