@@ -12,64 +12,40 @@ header { background:#e65100; color:white; padding:15px; text-align:center; font-
 h2 { text-align:center; color:#e65100; margin-bottom:20px; }
 .loading { text-align: center; color: #555; }
 
-/* --- Slideshow Styles --- */
+/* --- Slideshow Styles (Updated) --- */
 .slideshow-container {
-    max-width: 1000px;
+    max-width: 700px; /* Smaller width */
     position: relative;
     margin: auto;
     background: #fff;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    border-radius: 12px; /* Curved boundary */
     overflow: hidden;
+    padding: 10px;
 }
 .mySlides {
     display: none;
+    transition: opacity 1s ease-in-out;
 }
 .mySlides img {
     width: 100%;
-    height: 450px; /* Consistent height for slideshow */
+    height: 350px; /* Reduced height */
     object-fit: cover;
+    border-radius: 8px;
     cursor: pointer;
-}
-.prev, .next {
-    cursor: pointer;
-    position: absolute;
-    top: 50%;
-    width: auto;
-    padding: 16px;
-    margin-top: -22px;
-    color: white;
-    font-weight: bold;
-    font-size: 18px;
-    transition: 0.6s ease;
-    border-radius: 0 3px 3px 0;
-    user-select: none;
-    background-color: rgba(0,0,0,0.5);
-}
-.next {
-    right: 0;
-    border-radius: 3px 0 0 3px;
-}
-.prev:hover, .next:hover {
-    background-color: rgba(0,0,0,0.8);
 }
 .dot-container {
     text-align: center;
     padding: 10px;
     background: #fff;
 }
-.dot {
-    cursor: pointer;
-    height: 15px;
-    width: 15px;
-    margin: 0 2px;
-    background-color: #bbb;
-    border-radius: 50%;
-    display: inline-block;
-    transition: background-color 0.6s ease;
+.fade {
+    animation-name: fade;
+    animation-duration: 1.5s;
 }
-.active, .dot:hover {
-    background-color: #e65100;
+@keyframes fade {
+    from {opacity: .4} 
+    to {opacity: 1}
 }
 
 /* --- Main Gallery Grid Styles --- */
@@ -86,6 +62,9 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 .gallery-item:hover {
     transform: scale(1.03);
@@ -147,6 +126,11 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
     text-decoration: none;
     cursor: pointer;
 }
+@media only screen and (max-width: 768px) {
+    .modal-content {
+        width: 100%;
+    }
+}
 </style>
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -162,8 +146,8 @@ const fullImageModal = document.getElementById("full-image-modal");
 const fullImageModalImg = document.getElementById("full-image-modal-content");
 const fullImageCaption = document.getElementById("full-image-caption");
 
-let slideIndex = 1;
 let allImages = [];
+let slideIndex = 0; // Start at 0 for array indexing
 
 async function loadGallery() {
     slideshowContainer.innerHTML = '<p class="loading">गॅलरी लोड होत आहे...</p>';
@@ -184,6 +168,9 @@ async function loadGallery() {
 
         renderSlideshow(images);
         renderGallery(images);
+        
+        // Start the random slideshow
+        setInterval(showRandomSlide, 3000);
 
     } catch(e) {
         slideshowContainer.innerHTML = '<p class="loading">गॅलरी लोड करता आली नाही.</p>';
@@ -201,10 +188,7 @@ function renderSlideshow(images) {
             </div>
         `;
     });
-    slideshowHTML += `<a class="prev" onclick="plusSlides(-1)">&#10094;</a>`;
-    slideshowHTML += `<a class="next" onclick="plusSlides(1)">&#10095;</a>`;
     slideshowContainer.innerHTML = slideshowHTML;
-
     showSlides(slideIndex);
 }
 
@@ -222,24 +206,20 @@ function renderGallery(images) {
 }
 
 function showSlides(n) {
-    let i;
     let slides = document.getElementsByClassName("mySlides");
-    if (n > slides.length) {slideIndex = 1}    
-    if (n < 1) {slideIndex = slides.length}
-    for (i = 0; i < slides.length; i++) {
+    for (let i = 0; i < slides.length; i++) {
         slides[i].style.display = "none";  
     }
-    slides[slideIndex-1].style.display = "block";  
+    if (slides.length > 0) {
+        slides[n].style.display = "block";
+    }
 }
 
-function plusSlides(n) {
-    showSlides(slideIndex += n);
+function showRandomSlide() {
+    if (allImages.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * allImages.length);
+    showSlides(randomIndex);
 }
-
-function currentSlide(n) {
-    showSlides(slideIndex = n);
-}
-
 
 function showFullImageModal(imageUrl, imageTitle) {
     fullImageModal.style.display = "block";
