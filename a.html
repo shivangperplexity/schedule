@@ -81,7 +81,7 @@ onAuthStateChanged(auth,user=>{
     loginDiv.classList.add('hidden');
     adminDiv.classList.remove('hidden');
     loadAdminEvents();
-    loadAdminGallery(); // Load gallery for admin
+    loadAdminGallery();
   } else {
     loginDiv.classList.remove('hidden');
     adminDiv.classList.add('hidden');
@@ -134,7 +134,7 @@ uploadBtn.addEventListener('click', async () => {
     alert("Image uploaded successfully!");
     imageInput.value = "";
     imageTitleInput.value = "";
-    loadAdminGallery(); // Refresh the gallery list in admin panel
+    loadAdminGallery();
   } catch (e) {
     alert("Upload failed: " + e.message);
   }
