@@ -11,7 +11,7 @@ header { background:#e65100; color:white; padding:15px; text-align:center; font-
 h2 { text-align:center; color:#e65100; margin-bottom:20px; }
 .gallery-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* This is the key change */
+    grid-template-columns: 1fr; /* Corrected to one column */
     gap: 15px;
 }
 .gallery-item {
@@ -30,7 +30,20 @@ h2 { text-align:center; color:#e65100; margin-bottom:20px; }
 .gallery-item img:hover {
     transform: scale(1.05);
 }
-.gallery-item p { text-align: center; font-weight: 500; margin: 10px 0; color: #333; }
+.gallery-item h3 {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 10px 0 5px;
+    color: #333;
+}
+.gallery-item p {
+    text-align: center;
+    font-weight: 400;
+    margin: 5px 0 10px;
+    color: #666;
+    font-size: 0.9em;
+}
 .loading { text-align: center; color: #555; }
 
 /* The Modal (Popup) */
@@ -108,7 +121,7 @@ const span = document.getElementsByClassName("close")[0];
 async function loadGallery() {
   galleryGrid.innerHTML = '<p class="loading">गॅलरी लोड होत आहे...</p>';
   try {
-    const { data: images, error } = await supabase.from('gallery_events').select('url, title').order('timestamp', { ascending: false });
+    const { data: images, error } = await supabase.from('gallery_events').select('url, title, timestamp').order('timestamp', { ascending: false });
     if (error) throw error;
     
     galleryGrid.innerHTML = "";
@@ -118,11 +131,13 @@ async function loadGallery() {
     }
     
     images.forEach(image => {
+      const uploadDate = new Date(image.timestamp).toLocaleDateString('mr-IN');
       const div = document.createElement("div");
       div.className = "gallery-item";
       div.innerHTML = `
         <img src="${image.url}" alt="${image.title}" onclick="showModal('${image.url}', '${image.title}')">
-        <p>${image.title || 'No Title'}</p>
+        <h3>${image.title || 'No Title'}</h3>
+        <p>अपलोड केला: ${uploadDate}</p>
       `;
       galleryGrid.appendChild(div);
     });
