@@ -89,7 +89,8 @@ onAuthStateChanged(auth,user=>{
 });
 
 // Add/Edit event with Firebase
-addEventBtn.addEventListener('click', async ()=>{\n  const data = {\n    title: titleInput.value,\n    date: dateInput.value,\n    place: placeInput.value,\n    map_url: mapInput.value,\n    description: descInput.value\n  };\n  try {\n    if(editingEventId){\n      await updateDoc(doc(db,'events',editingEventId), data);\n      editingEventId=null;\n      addEventBtn.textContent="Add Event";\n    } else {\n      await addDoc(collection(db,'events'), data);\n    }\n    titleInput.value=""; dateInput.value=""; placeInput.value=""; mapInput.value=""; descInput.value="";\n    loadAdminEvents();\n  }catch(e){ alert(e.message); }\n});
+addEventBtn.addEventListener('click', async ()=>{\n  const data = {\n    title: titleInput.value,\n    date: dateInput.value,\n    place: placeInput.value,\n    map_url: mapInput.value,\n    description: descInput.value\n  };\n  try {\n    if(editingEventId){\n      await updateDoc(doc(db,'events',editingEventId), data);\n      editingEventId=null;\n      addEventBtn.textContent="Add Event";\n    } else {\n      await addDoc(collection(db,'events'), data);\n    }\n    titleInput.value=""; dateInput.value=""; placeInput.value=""; mapInput.value=""; descInput.value="";\n    loadAdminEvents();
+  }catch(e){ alert(e.message); }\n});
 
 // Load events in admin panel with Firebase
 async function loadAdminEvents(){\n  eventListDiv.innerHTML="लोड होत आहे...";\n  try{\n    const snapshot = await getDocs(collection(db,'events'));
