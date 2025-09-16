@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Adn - दौरा कार्यक्रम</title>
+<title>Admin - दौरा कार्यक्रम</title>
 <style>
 body { font-family:"Noto Sans Devanagari",sans-serif; background:#f7f7f7; margin:0; padding:0; }
 header { background:#e65100; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
@@ -70,14 +70,36 @@ const galleryAdminListDiv = document.getElementById('galleryAdminList');
 let editingEventId = null;
 let editingGalleryId = null;
 
-// Firebase Auth
+// Login at once for both Firebase and Supabase
 loginBtn.addEventListener('click', async ()=>{
   try{
-    await signInWithEmailAndPassword(auth,emailInput.value,passInput.value);
-  }catch(e){ alert(e.message); }
+    const email = emailInput.value;
+    const password = passInput.value;
+    
+    // Step 1: Login with Firebase
+    const firebaseUserCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    // Step 2: Login with Supabase using the same credentials
+    const { user: supabaseUser, error: supabaseError } = await supabase.auth.signInWithPassword({ email, password });
+    if (supabaseError) {
+      // If Supabase login fails, log out of Firebase
+      await signOut(auth);
+      throw supabaseError;
+    }
+    
+    alert("Login successful!");
+    
+  }catch(e){ 
+    alert("Login failed: " + e.message); 
+    console.error(e);
+  }
 });
 
-logoutBtn.addEventListener('click', ()=>signOut(auth));
+// Logout
+logoutBtn.addEventListener('click', async ()=>{
+  await signOut(auth);
+  await supabase.auth.signOut();
+});
 
 // Auth state
 onAuthStateChanged(auth,user=>{
@@ -184,7 +206,7 @@ uploadBtn.addEventListener('click', async () => {
     
     const { data: { publicUrl } } = supabase.storage.from('gallery_images_new').getPublicUrl(fileName);
     
-    const { error: insertError } = await supabase.from('gallery').insert([{ 
+    const { error: insertError } = await supabase.from('gallery_events').insert([{ 
       url: publicUrl, 
       timestamp: Date.now(), 
       title: title,
@@ -205,7 +227,7 @@ uploadBtn.addEventListener('click', async () => {
 async function loadAdminGallery() {
     galleryAdminListDiv.innerHTML = "लोड होत आहे...";
     try {
-        const { data: images, error } = await supabase.from('gallery').select('*').order('timestamp', { ascending: false });
+        const { data: images, error } = await supabase.from('gallery_events').select('*').order('timestamp', { ascending: false });
         if (error) throw error;
         
         galleryAdminListDiv.innerHTML = "";
@@ -241,7 +263,7 @@ window.deleteGalleryImage = async (id, imageUrl) => {
             if (storageError) throw storageError;
 
             // Delete the entry from the gallery table in the database
-            const { error: dbError } = await supabase.from('gallery').delete().eq('id', id);
+            const { error: dbError } = await supabase.from('gallery_events').delete().eq('id', id);
             if (dbError) throw dbError;
 
             loadAdminGallery();
