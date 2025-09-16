@@ -55,7 +55,7 @@ const emailInput = document.getElementById('email');
 const passInput = document.getElementById('password');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
-const addEventBtn = document.getElementById('addEventBtn');
+const addBtn = document.getElementById('addBtn');
 const titleInput = document.getElementById('title');
 const dateInput = document.getElementById('date');
 const placeInput = document.getElementById('place');
@@ -89,7 +89,10 @@ onAuthStateChanged(auth,user=>{
 });
 
 // Add/Edit event with Firebase
-addEventBtn.addEventListener('click', async ()=>{\n  const data = {\n    title: titleInput.value,\n    date: dateInput.value,\n    place: placeInput.value,\n    map_url: mapInput.value,\n    description: descInput.value\n  };\n  try {\n    if(editingEventId){\n      await updateDoc(doc(db,'events',editingEventId), data);\n      editingEventId=null;\n      addEventBtn.textContent="Add Event";\n    } else {\n      await addDoc(collection(db,'events'), data);\n    }\n    titleInput.value=""; dateInput.value=""; placeInput.value=""; mapInput.value=""; descInput.value="";\n    loadAdminEvents();
+addBtn.addEventListener('click', async ()=>{\n  const data = {\n    title: titleInput.value,\n    date: dateInput.value,\n    place: placeInput.value,\n    map_url: mapInput.value,\n    description: descInput.value\n  };\n  try {
+    if(editingEventId){\n      await updateDoc(doc(db,'events',editingEventId), data);\n      editingEventId=null;\n      addBtn.textContent="Add Event";\n    } else {
+      await addDoc(collection(db,'events'), data);\n    }\n    titleInput.value=""; dateInput.value=""; placeInput.value=""; mapInput.value=""; descInput.value="";
+    loadAdminEvents();
   }catch(e){ alert(e.message); }\n});
 
 // Load events in admin panel with Firebase
@@ -98,13 +101,22 @@ async function loadAdminEvents(){\n  eventListDiv.innerHTML="लोड होत
     eventListDiv.innerHTML="";
     events.forEach(ev=>{\n      const div = document.createElement('div');
       div.className='event-item';
-      div.innerHTML=`\n        <div>\n          <strong>${ev.title}</strong> (${ev.date})\n        </div>\n        <div class="actions">\n          <button onclick='editEvent("${ev.id}","${ev.title}","${ev.date}","${ev.place}","${ev.map_url}","${ev.description}")'>Edit</button>\n          <button onclick='deleteEvent("${ev.id}")'>Delete</button>\n        </div>\n      `;
+      div.innerHTML=`
+        <div>
+          <strong>${ev.title}</strong> (${ev.date})
+        </div>
+        <div class="actions">
+          <button onclick='editEvent("${ev.id}","${ev.title}","${ev.date}","${ev.place}","${ev.map_url}","${ev.description}")'>Edit</button>
+          <button onclick='deleteEvent("${ev.id}")'>Delete</button>
+        </div>
+      `;
       eventListDiv.appendChild(div);\n    });
   }catch(e){ eventListDiv.innerHTML="लोड करता आले नाही."; console.error(e); }\n}
 
 // Edit event function
-window.editEvent = (id,title,date,place,map,desc)=>{\n  editingEventId=id;\n  titleInput.value=title;\n  dateInput.value=date;\n  placeInput.value=place;\n  mapInput.value=map;\n  descInput.value=desc;\n  addEventBtn.textContent="Update Event";\n};\n\n// Delete event with Firebase
-window.deleteEvent = async (id) => {\n  if (confirm("Are you sure you want to delete this event?")) {\n    try {\n      await deleteDoc(doc(db, 'events', id));
+window.editEvent = (id,title,date,place,map,desc)=>{\n  editingEventId=id;\n  titleInput.value=title;\n  dateInput.value=date;\n  placeInput.value=place;\n  mapInput.value=map;\n  descInput.value=desc;\n  addBtn.textContent="Update Event";\n};\n\n// Delete event with Firebase
+window.deleteEvent = async (id) => {\n  if (confirm("Are you sure you want to delete this event?")) {\n    try {
+      await deleteDoc(doc(db, 'events', id));
       loadAdminEvents();
     } catch (e) {\n      alert("Error deleting event: " + e.message);\n    }\n  }\n};\n\n// --- GALLERY FUNCTIONS (Supabase) ---
 uploadBtn.addEventListener('click', async () => {
@@ -212,7 +224,7 @@ window.deleteGalleryImage = async (id, imageUrl) => {
 <input type="text" id="place" placeholder="Place">
 <input type="text" id="map_url" placeholder="Map URL (optional)">
 <textarea id="description" placeholder="Description"></textarea>
-<button id="addEventBtn">Add Event</button>
+<button id="addBtn">Add Event</button>
 
 <div class="event-list" id="eventList"></div>
 
