@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - डॉ. विश्वजीत कदम ॲप</title>
+  <style>
+    body {
+      font-family: 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
+      background: #f7f9fc;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      transition: background-color 0.5s ease;
+    }
+    header {
+      background: linear-gradient(to right, #ff6a00, #ff8c42);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      animation: slideDown 0.8s ease-out;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 1s ease-out;
+    }
+    h2 {
+      text-align: center;
+      color: #d15600;
+      margin-bottom: 1.5rem;
+    }
+    .hidden {
+      display: none;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .nav-buttons button {
+      background: #fff;
+      color: #ff6a00;
+      border: 2px solid #ff6a00;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .nav-buttons button:hover, .nav-buttons button.active {
+      background: #ff6a00;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .karyakram-options {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .list-item, .item-form, .gallery-item-admin {
+      background: #f1f1f1;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      transition: all 0.3s ease;
+    }
+    .list-item:hover, .gallery-item-admin:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .item-form {
+      flex-direction: column;
+      align-items: stretch;
+      background: #fff8e1;
+      padding: 2rem;
+      border: 1px dashed #ff6a00;
+    }
+    .item-form input, .item-form textarea, .item-form button {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    .item-form input:focus, .item-form textarea:focus {
+      border-color: #ff6a00;
+      outline: none;
+    }
+    .item-form button {
+      background: #ff6a00;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .item-form button:hover {
+      background: #d15600;
+      transform: translateY(-2px);
+    }
+    .list-item .actions button, .gallery-item-admin .actions button, .registration-list-item .actions button, .complaint-list-item .actions button {
+      width: auto;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      margin-left: 5px;
+      background: #ff6a00;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .list-item .actions button:hover, .gallery-item-admin .actions button:hover, .registration-list-item .actions button:hover, .complaint-list-item .actions button:hover {
+      background: #d15600;
+      transform: translateY(-1px);
+    }
+    .karyakram-poster-preview {
+      width: 150px;
+      height: auto;
+      border-radius: 8px;
+      margin-top: 1rem;
+      display: block;
+    }
+    .gallery-item-admin img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      margin-right: 10px;
+      border-radius: 4px;
+    }
+    #imageFile, #karyakramPoster {
+      border: none;
+    }
+    .registration-group {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #e6f0fa;
+      border-radius: 12px;
+    }
+    .registration-group h4 {
+      margin-top: 0;
+      color: #0d47a1;
+      border-bottom: 2px solid #b3e5fc;
+      padding-bottom: 0.5rem;
+    }
+    .registration-list-item, .complaint-list-item {
+        background: #f8fafd;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        transition: all 0.3s ease;
+    }
+    .registration-list-item:hover, .complaint-list-item:hover {
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .complaint-list-item div {
+        flex: 1;
+    }
+    .complaint-list-item a {
+        color: #ff6a00;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    #exportBtn {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #exportBtn:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+<script type="module">
+  // Firebase for Schedule
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+  import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+  // Supabase for Karyakram, Gallery, and Complaints
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  // SheetJS for Excel Export
+  import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/xlsx.mjs";
+
+  // Configuration (Use the credentials you sent previously)
+  const firebaseConfig = {
+    apiKey: "AIzaSyD7dNWujSZFUSat3zKH0lXf8hNZKCv6-XU",
+    authDomain: "schedule-balasaheb.firebaseapp.com",
+    projectId: "schedule-balasaheb",
+    storageBucket: "schedule-balasaheb.appspot.com",
+    messagingSenderId: "614219892733",
+    appId: "1:614219892733:web:15f60c89267014cab37b94"
+  };
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
+  const db = getFirestore(firebaseApp);
+
+  const SUPABASE_URL = "https://ckmysozgdvemawcffpjr.supabase.co"; 
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrbXlzb3pnZHZlbWF3Y2ZmcGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5NzQ5NzIsImV4cCI6MjA3MzU1MDk3Mn0.9zTLb-EpuE-p6JMp-sd8cws2J0c9WOsm2ZYQoqovL7w"; 
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // DOM Elements
+  const loginDiv = document.getElementById('loginDiv');
+  const adminDiv = document.getElementById('adminDiv');
+  const emailInput = document.getElementById('email');
+  const passInput = document.getElementById('password');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const navButtons = document.querySelectorAll('.nav-buttons button');
+  const scheduleDiv = document.getElementById('scheduleDiv');
+  const galleryDiv = document.getElementById('galleryDiv');
+  const karyakramDiv = document.getElementById('karyakramDiv');
+  const complaintsDiv = document.getElementById('complaintsDiv');
+  const registrationsDiv = document.getElementById('registrationsDiv');
+  const exportBtn = document.getElementById('exportBtn');
+
+  // Schedule DOM
+  const addScheduleBtn = document.getElementById('addScheduleBtn');
+  const titleInput = document.getElementById('title');
+  const dateInput = document.getElementById('date');
+  const placeInput = document.getElementById('place');
+  const mapInput = document.getElementById('map_url');
+  const descInput = document.getElementById('description');
+  const eventListDiv = document.getElementById('eventList');
+  let editingScheduleId = null;
+
+  // Gallery DOM
+  const imageInput = document.getElementById('imageFile');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const galleryAdminListDiv = document.getElementById('galleryAdminList');
+
+  // Karyakram DOM
+  const karyakramListDiv = document.getElementById('karyakramListDiv');
+  const karyakramFormDiv = document.getElementById('karyakramFormDiv');
+  const karyakramAddEditSaveBtn = document.getElementById('karyakramAddEditSaveBtn');
+  const karyakramTitleInput = document.getElementById('karyakramTitle');
+  const karyakramDescInput = document.getElementById('karyakramDesc');
+  const karyakramLocationInput = document.getElementById('karyakramLocation');
+  const karyakramDateInput = document.getElementById('karyakramDate');
+  const karyakramTimeInput = document.getElementById('karyakramTime');
+  const karyakramPosterInput = document.getElementById('karyakramPoster');
+  let editingKaryakramId = null;
+
+  // Registration DOM
+  const registrationsListDiv = document.getElementById('registrationsListDiv');
+
+  // Complaints DOM
+  const complaintsListDiv = document.getElementById('complaintsListDiv');
+
+  // --- Main Auth and Navigation Logic ---
+  loginBtn.addEventListener('click', async () => {
+    try {
+      await signInWithEmailAndPassword(auth, emailInput.value, passInput.value);
+      const { error: supabaseError } = await supabase.auth.signInWithPassword({ email: emailInput.value, password: passInput.value });
+      if (supabaseError) {
+        await signOut(auth);
+        throw supabaseError;
+      }
+      alert("Login successful!");
+    } catch (e) {
+      alert("Login failed: " + e.message);
+      console.error(e);
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await signOut(auth);
+    await supabase.auth.signOut();
+  });
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      loginDiv.classList.add('hidden');
+      adminDiv.classList.remove('hidden');
+      showSection('karyakramDiv'); // Default to Karyakram section
+    } else {
+      loginDiv.classList.remove('hidden');
+      adminDiv.classList.add('hidden');
+    }
+  });
+
+  function showSection(sectionId) {
+    const sections = [scheduleDiv, galleryDiv, karyakramDiv, complaintsDiv, registrationsDiv];
+    sections.forEach(div => div.classList.add('hidden'));
+    document.getElementById(sectionId).classList.remove('hidden');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+    // Load content for the selected section
+    if (sectionId === 'scheduleDiv') loadAdminEvents();
+    if (sectionId === 'galleryDiv') loadAdminGallery();
+    if (sectionId === 'karyakramDiv') {
+      karyakramListDiv.classList.remove('hidden');
+      karyakramFormDiv.classList.add('hidden');
+      loadKaryakramList();
+    }
+    if (sectionId === 'registrationsDiv') {
+      loadKaryakramRegistrations();
+    }
+    if (sectionId === 'complaintsDiv') {
+      loadAdminComplaints();
+    }
+  }
+  
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      showSection(btn.dataset.section);
+    });
+  });
+
+  // --- Schedule Management (Firebase) ---
+  addScheduleBtn.addEventListener('click', async () => {
+    const data = {
+      title: titleInput.value,
+      date: dateInput.value,
+      place: placeInput.value,
+      map_url: mapInput.value,
+      description: descInput.value
+    };
+    try {
+      if (editingScheduleId) {
+        await updateDoc(doc(db, 'events', editingScheduleId), data);
+        editingScheduleId = null;
+        addScheduleBtn.textContent = "कार्यक्रमाचे वेळापत्रक जोडा";
+      } else {
+        await addDoc(collection(db, 'events'), data);
+      }
+      titleInput.value = ""; dateInput.value = ""; placeInput.value = ""; mapInput.value = ""; descInput.value = "";
+      loadAdminEvents();
+    } catch (e) { alert(e.message); }
+  });
+
+  window.loadAdminEvents = async () => {
+    eventListDiv.innerHTML = "लोड होत आहे...";
+    try {
+      const snapshot = await getDocs(collection(db, 'events'));
+      const events = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      eventListDiv.innerHTML = "";
+      events.forEach(ev => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div>
+            <strong>${ev.title}</strong> (${ev.date})
+          </div>
+          <div class="actions">
+            <button onclick="editSchedule('${ev.id}','${ev.title}','${ev.date}','${ev.place}','${ev.map_url}','${ev.description}')">Edit</button>
+            <button onclick="deleteSchedule('${ev.id}')">Delete</button>
+          </div>
+        `;
+        eventListDiv.appendChild(div);
+      });
+    } catch (e) { eventListDiv.innerHTML = "लोड करता आले नाही."; console.error(e); }
+  };
+  
+  window.editSchedule = (id, title, date, place, map, desc) => {
+    editingScheduleId = id;
+    titleInput.value = title;
+    dateInput.value = date;
+    placeInput.value = place;
+    mapInput.value = map;
+    descInput.value = desc;
+    addScheduleBtn.textContent = "वेळापत्रक अद्यतनित करा";
+  };
+  
+  window.deleteSchedule = async (id) => {
+    if (confirm("Are you sure you want to delete this event?")) {
+      try {
+        await deleteDoc(doc(db, 'events', id));
+        loadAdminEvents();
+      } catch (e) {
+        alert("Error deleting event: " + e.message);
+      }
+    }
+  };
+
+  // --- Gallery Management (Supabase) ---
+  uploadBtn.addEventListener('click', async () => {
+    const files = imageInput.files;
+    if (!files || files.length === 0) {
+      alert("Please select at least one file.");
+      return;
+    }
+    const user = auth.currentUser;
+    if (!user) {
+      alert("You must be logged in to upload images.");
+      return;
+    }
+    try {
+      for (const file of files) {
+        const fileName = `${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('gallery_images_new').upload(fileName, file);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('gallery_images_new').getPublicUrl(fileName);
+        const { error: insertError } = await supabase.from('gallery_events').insert([{ 
+          url: publicUrl, 
+          timestamp: Date.now(),
+          user_id: user.uid
+        }]);
+        if (insertError) throw insertError;
+      }
+      alert("All images uploaded successfully!");
+      imageInput.value = "";
+      loadAdminGallery();
+    } catch (e) {
+      alert("Upload failed: " + e.message);
+      console.error(e);
+    }
+  });
+
+  window.loadAdminGallery = async () => {
+    galleryAdminListDiv.innerHTML = "लोड होत आहे...";
+    try {
+      const { data: images, error } = await supabase.from('gallery_events').select('*').order('timestamp', { ascending: false });
+      if (error) throw error;
+      galleryAdminListDiv.innerHTML = "";
+      images.forEach(image => {
+        const div = document.createElement("div");
+        div.className = "gallery-item-admin";
+        div.innerHTML = `
+          <div style="display: flex; align-items: center;">
+            <img src="${image.url}" alt="Image">
+          </div>
+          <div class="actions">
+            <button onclick="deleteGalleryImage('${image.id}', '${image.url}')">Delete</button>
+          </div>
+        `;
+        galleryAdminListDiv.appendChild(div);
+      });
+    } catch (e) {
+      galleryAdminListDiv.innerHTML = 'गॅलरी लोड करता आली नाही.';
+      console.error(e);
+    }
+  };
+
+  window.deleteGalleryImage = async (id, imageUrl) => {
+    if (confirm("Are you sure you want to delete this image?")) {
+      try {
+        const fileName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+        const { error: storageError } = await supabase.storage.from('gallery_images_new').remove([fileName]);
+        if (storageError) throw storageError;
+        const { error: dbError } = await supabase.from('gallery_events').delete().eq('id', id);
+        if (dbError) throw dbError;
+        loadAdminGallery();
+      } catch (e) {
+        alert("Error deleting image: " + e.message);
+        console.error(e);
+      }
+    }
+  };
+
+  // --- Karyakram Management (Supabase) ---
+  window.loadKaryakramList = async () => {
+    karyakramListDiv.innerHTML = "लोड होत आहे...";
+    try {
+      const { data: events, error } = await supabase
+        .from('karyakram_events')
+        .select('*')
+        .order('event_date', { ascending: true });
+      if (error) throw error;
+      karyakramListDiv.innerHTML = "";
+      if (events.length === 0) {
+        karyakramListDiv.innerHTML = "सध्या कोणताही कार्यक्रम उपलब्ध नाही.";
+        return;
+      }
+      events.forEach(ev => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div>
+            <strong>${ev.title}</strong> (${ev.event_date})
+            ${ev.poster_url ? `<img src="${ev.poster_url}" style="width: 50px; height: 50px; border-radius: 4px; margin-left: 10px;" alt="Poster">` : ''}
+          </div>
+          <div class="actions">
+            <button onclick="editKaryakram('${ev.id}')">Edit</button>
+            <button onclick="deleteKaryakram('${ev.id}')">Delete</button>
+          </div>
+        `;
+        karyakramListDiv.appendChild(div);
+      });
+    } catch (e) {
+      karyakramListDiv.innerHTML = "लोड करता आले नाही.";
+      console.error(e);
+    }
+  };
+
+  window.editKaryakram = async (id) => {
+    try {
+      const { data: event, error } = await supabase.from('karyakram_events').select('*').eq('id', id).single();
+      if (error) throw error;
+      editingKaryakramId = id;
+      karyakramTitleInput.value = event.title;
+      karyakramDescInput.value = event.description;
+      karyakramLocationInput.value = event.location;
+      karyakramDateInput.value = event.event_date;
+      karyakramTimeInput.value = event.event_time;
+      karyakramAddEditSaveBtn.textContent = 'कार्यक्रम अद्यतनित करा';
+      showSection('karyakramDiv');
+    } catch (e) {
+      alert("Error fetching karyakram: " + e.message);
+    }
+  };
+
+  window.deleteKaryakram = async (id) => {
+    if (confirm("तुम्ही हा कार्यक्रम हटवू इच्छिता का?")) {
+      try {
+        const { data: event, error: fetchError } = await supabase.from('karyakram_events').select('poster_url').eq('id', id).single();
+        if (fetchError) throw fetchError;
+        if (event.poster_url) {
+          const fileName = event.poster_url.substring(event.poster_url.lastIndexOf('/') + 1);
+          await supabase.storage.from('karyakram-posters').remove([fileName]);
+        }
+        const { error } = await supabase.from('karyakram_events').delete().eq('id', id);
+        if (error) throw error;
+        loadKaryakramList();
+      } catch (e) {
+        alert("कार्यक्रम हटवताना त्रुटी आली: " + e.message);
+        console.error(e);
+      }
+    }
+  };
+
+  karyakramAddEditSaveBtn.addEventListener('click', async () => {
+    const file = karyakramPosterInput.files[0];
+    let posterUrl = null;
+    try {
+      if (file) {
+        const fileName = `${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('karyakram-posters').upload(fileName, file);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('karyakram-posters').getPublicUrl(fileName);
+        posterUrl = publicUrl;
+      }
+      const eventData = {
+        title: karyakramTitleInput.value,
+        description: karyakramDescInput.value,
+        location: karyakramLocationInput.value,
+        event_date: karyakramDateInput.value,
+        event_time: karyakramTimeInput.value,
+        poster_url: posterUrl
+      };
+      if (editingKaryakramId) {
+        const { error } = await supabase.from('karyakram_events').update(eventData).eq('id', editingKaryakramId);
+        if (error) throw error;
+        alert("कार्यक्रम यशस्वीरित्या अद्यतनित केला!");
+      } else {
+        const { error } = await supabase.from('karyakram_events').insert([eventData]);
+        if (error) throw error;
+        alert("कार्यक्रम यशस्वीरित्या जोडला!");
+      }
+      resetKaryakramForm();
+      loadKaryakramList();
+    } catch (e) {
+      alert("कार्यक्रम जतन करताना त्रुटी आली: " + e.message);
+      console.error(e);
+    }
+  });
+
+  function resetKaryakramForm() {
+    karyakramTitleInput.value = '';
+    karyakramDescInput.value = '';
+    karyakramLocationInput.value = '';
+    karyakramDateInput.value = '';
+    karyakramTimeInput.value = '';
+    karyakramPosterInput.value = '';
+    editingKaryakramId = null;
+    karyakramAddEditSaveBtn.textContent = 'नवीन कार्यक्रम जोडा';
+  }
+
+  window.loadKaryakramRegistrations = async () => {
+    registrationsListDiv.innerHTML = "नोंदणी लोड होत आहे...";
+    try {
+      const { data, error } = await supabase
+        .from('karyakram_registrations')
+        .select('*, karyakram_events(title)')
+        .order('registered_at', { ascending: false });
+      
+      if (error) throw error;
+
+      registrationsListDiv.innerHTML = "";
+      if (data.length === 0) {
+        registrationsListDiv.innerHTML = "<p style='text-align: center; color: #555;'>कोणतीही नोंदणी आढळली नाही.</p>";
+        return;
+      }
+      
+      const registrationsByKaryakram = {};
+      data.forEach(reg => {
+          const karyakramTitle = reg.karyakram_events ? reg.karyakram_events.title : 'माहित नाही';
+          if (!registrationsByKaryakram[karyakramTitle]) {
+              registrationsByKaryakram[karyakramTitle] = [];
+          }
+          registrationsByKaryakram[karyakramTitle].push(reg);
+      });
+
+      for (const title in registrationsByKaryakram) {
+          const groupDiv = document.createElement('div');
+          groupDiv.className = 'registration-group';
+          groupDiv.innerHTML = `<h4>${title} (${registrationsByKaryakram[title].length} नोंदणी)</h4>`;
+          
+          registrationsByKaryakram[title].forEach(reg => {
+              const div = document.createElement('div');
+              div.className = 'registration-list-item';
+              div.innerHTML = `
+                <div>
+                  <strong>नाव:</strong> ${reg.user_name}<br>
+                  <strong>मोबाइल:</strong> ${reg.phone_number}
+                </div>
+                <div class="actions">
+                  <button onclick="deleteRegistration('${reg.id}')">Delete</button>
+                </div>
+              `;
+              groupDiv.appendChild(div);
+          });
+          registrationsListDiv.appendChild(groupDiv);
+      }
+    } catch (e) {
+      registrationsListDiv.innerHTML = "नोंदणी लोड करता आली नाही.";
+      console.error(e);
+    }
+  };
+
+  window.deleteRegistration = async (id) => {
+    if (confirm("तुम्ही ही नोंदणी हटवू इच्छिता का?")) {
+      try {
+        const { error } = await supabase.from('karyakram_registrations').delete().eq('id', id);
+        if (error) throw error;
+        loadKaryakramRegistrations();
+      } catch (e) {
+        alert("नोंदणी हटवताना त्रुटी आली: " + e.message);
+      }
+    }
+  };
+
+  window.loadAdminComplaints = async () => {
+    complaintsListDiv.innerHTML = "तक्रारी लोड होत आहेत...";
+    try {
+      const { data: complaints, error } = await supabase
+        .from('complaints')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+
+      complaintsListDiv.innerHTML = "";
+      if (complaints.length === 0) {
+        complaintsListDiv.innerHTML = "<p style='text-align: center; color: #555;'>कोणतीही तक्रार आढळली नाही.</p>";
+        return;
+      }
+
+      complaints.forEach(comp => {
+        const div = document.createElement('div');
+        div.className = 'complaint-list-item';
+        div.innerHTML = `
+          <div>
+            <strong>नाव:</strong> ${comp.user_name}<br>
+            <strong>मोबाइल:</strong> ${comp.user_phone}<br>
+            <strong>पत्ता:</strong> ${comp.user_address || 'उपलब्ध नाही'}<br>
+            <strong>विषय:</strong> ${comp.subject}<br>
+            <strong>वर्णन:</strong> ${comp.description}<br>
+            ${comp.image_url ? `<strong>फोटो:</strong> <a href="${comp.image_url}" target="_blank">फोटो पहा</a>` : ''}
+          </div>
+          <div class="actions">
+            <button onclick="deleteComplaint('${comp.id}', '${comp.image_url || ''}')">Delete</button>
+          </div>
+        `;
+        complaintsListDiv.appendChild(div);
+      });
+    } catch (e) {
+      complaintsListDiv.innerHTML = "तक्रारी लोड करता आल्या नाहीत.";
+      console.error(e);
+    }
+  };
+  
+  window.deleteComplaint = async (id, imageUrl) => {
+    if (confirm("तुम्ही ही तक्रार हटवू इच्छिता का?")) {
+      try {
+        if (imageUrl) {
+          const fileName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+          const { error: storageError } = await supabase.storage.from('complaint-images').remove([fileName]);
+          if (storageError) console.error("Error deleting image from storage:", storageError);
+        }
+        
+        const { error: dbError } = await supabase.from('complaints').delete().eq('id', id);
+        if (dbError) throw dbError;
+        
+        loadAdminComplaints();
+      } catch (e) {
+        alert("तक्रार हटवताना त्रुटी आली: " + e.message);
+        console.error(e);
+      }
+    }
+  };
+
+  // --- Export to Excel Function ---
+  exportBtn.addEventListener('click', async () => {
+    alert("Excel फाइल तयार होत आहे...");
+    try {
+      const { data: registrations, error } = await supabase
+        .from('karyakram_registrations')
+        .select(`
+          user_name,
+          phone_number,
+          registered_at,
+          karyakram_events(
+            title,
+            location,
+            event_date,
+            event_time
+          )
+        `)
+        .order('registered_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (registrations.length === 0) {
+        alert("निर्यात करण्यासाठी कोणतीही नोंदणी नाही.");
+        return;
+      }
+      
+      const formattedData = registrations.map(reg => ({
+        'कार्यक्रमाचे नाव': reg.karyakram_events.title,
+        'नाव': reg.user_name,
+        'मोबाइल नंबर': reg.phone_number,
+        'नोंदणीची तारीख': new Date(reg.registered_at).toLocaleString('mr-IN'),
+        'कार्यक्रमाचे ठिकाण': reg.karyakram_events.location,
+        'कार्यक्रमाची तारीख': reg.karyakram_events.event_date,
+        'कार्यक्रमाची वेळ': reg.karyakram_events.event_time,
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "नोंदणी");
+
+      XLSX.writeFile(workbook, "karyakram_registrations.xlsx");
+      alert("Excel फाइल यशस्वीरित्या तयार झाली.");
+
+    } catch (e) {
+      alert("Excel फाइल तयार करताना त्रुटी आली: " + e.message);
+      console.error(e);
+    }
+  });
+
+</script>
+
+<header>Admin - डॉ. विश्वजीत कदम ॲप</header>
+
+<div class="container" id="loginDiv">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+</div>
+
+<div class="container hidden" id="adminDiv">
+  <button id="logoutBtn">Logout</button>
+  <h2>डॅशबोर्ड</h2>
+  <div class="nav-buttons">
+    <button data-section="scheduleDiv">दौरा कार्यक्रम</button>
+    <button data-section="galleryDiv">गॅलरी</button>
+    <button data-section="karyakramDiv" class="active">कार्यक्रम</button>
+    <button data-section="registrationsDiv">नोंदणी पहा</button>
+    <button data-section="complaintsDiv">तक्रारी</button>
+  </div>
+
+  <div id="scheduleDiv" class="hidden">
+    <h3>दौरा कार्यक्रम व्यवस्थापन</h3>
+    <div class="item-form">
+      <h4>कार्यक्रमाचे वेळापत्रक जोडा / संपादित करा</h4>
+      <input type="text" id="title" placeholder="शीर्षक">
+      <input type="date" id="date">
+      <input type="text" id="place" placeholder="ठिकाण">
+      <input type="text" id="map_url" placeholder="गुगल मॅप लिंक (ঐच्छिक)">
+      <textarea id="description" placeholder="वर्णन"></textarea>
+      <button id="addScheduleBtn">कार्यक्रमाचे वेळापत्रक जोडा</button>
+    </div>
+    <div class="event-list" id="eventList"></div>
+  </div>
+
+  <div id="galleryDiv" class="hidden">
+    <h3>गॅलरी व्यवस्थापन</h3>
+    <div class="item-form">
+      <h4>नवीन फोटो अपलोड करा</h4>
+      <input type="file" id="imageFile" accept="image/*" multiple>
+      <button id="uploadBtn">फोटो अपलोड करा</button>
+    </div>
+    <div class="gallery-admin-list" id="galleryAdminList"></div>
+  </div>
+
+  <div id="karyakramDiv">
+    <h3>कार्यक्रम व्यवस्थापन</h3>
+    <div class="item-list" id="karyakramListDiv"></div>
+    <div class="item-form" id="karyakramFormDiv">
+      <h4>कार्यक्रम जोडा / संपादित करा</h4>
+      <input type="text" id="karyakramTitle" placeholder="कार्यक्रमाचे शीर्षक" required>
+      <input type="text" id="karyakramLocation" placeholder="ठिकाण" required>
+      <input type="date" id="karyakramDate" required>
+      <input type="text" id="karyakramTime" placeholder="वेळ (उदा. 5:00 PM)" required>
+      <textarea id="karyakramDesc" placeholder="कार्यक्रमाचे वर्णन" required></textarea>
+      <p>पोस्टर अपलोड करा (ऐच्छिक)</p>
+      <input type="file" id="karyakramPoster" accept="image/*">
+      <button id="karyakramAddEditSaveBtn">नवीन कार्यक्रम जोडा</button>
+    </div>
+  </div>
+
+  <div id="registrationsDiv" class="hidden">
+      <h3>सर्व नोंदणी</h3>
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+          <button id="exportBtn">Excel मध्ये निर्यात करा</button>
+      </div>
+      <div class="registrations-list-content" id="registrationsListDiv">
+          </div>
+  </div>
+
+  <div id="complaintsDiv" class="hidden">
+    <h3>तक्रारी व्यवस्थापन</h3>
+    <div class="complaints-list-content" id="complaintsListDiv">
+      </div>
+  </div>
+</div>
+
+</body>
+</html>
